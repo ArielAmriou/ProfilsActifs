@@ -25,7 +25,7 @@ jobs:
         run: echo "run_action=true" >> "$GITHUB_OUTPUT"
 
   push_to_mirror:
-    needs: [run_tests]
+    needs: [check_valid_repo]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
