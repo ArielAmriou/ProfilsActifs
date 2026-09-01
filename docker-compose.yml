@@ -20,6 +20,15 @@ services:
       - backendnet
     ports:
       - "8081:8081"
+  
+  front-bun:
+    image: bun-frontend
+    depends_on:
+      - back-bun
+    networks:
+      - backendnet
+    ports:
+      - "3000:3000"
 
 volumes:
   postgres:
