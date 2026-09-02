@@ -2,7 +2,10 @@ CREATE TYPE user_role AS ENUM ('jobseeker', 'recruiter', 'admin');
 
 CREATE TABLE "users"(
     "id" UUID PRIMARY KEY,
-    "username" VARCHAR(255) NOT NULL,
+    "firstname" VARCHAR(255) NOT NULL,
+    "lastname" VARCHAR(255) NOT NULL,
+    "email" VARCHAR(255) NOT NULL,
+    "password" VARCHAR(255) NOT NULL,
     "role" user_role NOT NULL,
     "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
     "birthdate" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL
