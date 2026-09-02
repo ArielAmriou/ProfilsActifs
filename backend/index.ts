@@ -3,10 +3,8 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { serializerCompiler, validatorCompiler } from "fastify-type-provider-zod";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 
-const prisma = new PrismaClient();
 const fastify = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
 
 fastify.setValidatorCompiler(validatorCompiler);
@@ -35,7 +33,6 @@ const start = async () => {
 
     fastify.get("/health", async (request, reply) => {
       try {
-        await prisma.$queryRaw`SELECT 1`;
         return reply.code(200).send({ status: "ok", uptime: process.uptime() });
       } catch (error) {
         return reply.code(503).send({ status: "error", message: "Database connection failed" });
