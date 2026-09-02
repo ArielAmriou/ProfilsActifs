@@ -1,9 +1,13 @@
 import './globals.css';
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="fr">
-      <body>{children}</body>
+      <body>
+        <nav className="flex w-full h-full bg-amber-400">
+          {children}
+        </nav>
+      </body>
     </html>
-  )
+  );
 }
