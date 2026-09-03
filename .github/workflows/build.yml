@@ -3,7 +3,8 @@ name: Build & Package ProfilsActifs
 on:
   push:
     branches:
-      - build_artifact
+      - main
+      - dev
 
 jobs:
   build-and-artifact:
