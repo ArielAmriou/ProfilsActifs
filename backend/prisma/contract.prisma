@@ -3,19 +3,24 @@
 
 namespace public {
   model Users {
-    id        Uuid              @id(map: "users_pkey")
-    firstname  VarChar(255)
-    lastname  VarChar(255)
-    email  VarChar(255)
-    password  VarChar(255)
-    role      pg.enum(UserRole)
-    createdAt Timestamp(0)      @map("created_at")
-    birthdate Timestamp(0)
-    answers   Answers[]
-    favorites Favorites[]
-    likes     Likes[]
-    surveys   Surveys[]
-    videos    Videos?
+    id            Uuid              @id(map: "users_pkey")
+    firstname     VarChar(255)
+    lastname      VarChar(255)
+    name          VarChar(255)
+    email         VarChar(255)      @unique(map: "users_email_key")
+    emailVerified Boolean           @default(false) @map("email_verified")
+    image         VarChar(255)?
+    role          pg.enum(UserRole)
+    createdAt     Timestamptz(3)    @map("created_at")
+    updatedAt     Timestamptz(3)    @map("updated_at")
+    birthdate     Timestamp(0)
+    answers       Answers[]
+    favorites     Favorites[]
+    likes         Likes[]
+    surveys       Surveys[]
+    videos        Videos?
+    sessions      Session[]
+    accounts      Account[]
 
     @@map("users")
   }
@@ -95,6 +100,54 @@ namespace public {
 
     @@id([videoId, userId], map: "likes_pkey")
     @@map("likes")
+  }
+
+  model Session {
+    id        VarChar(255)   @id(map: "session_pkey")
+    userId    Uuid           @map("user_id")
+    user      Users          @relation(fields: [userId], references: [id], onDelete: Cascade, map: "session_user_id_fkey", index: false)
+    token     VarChar(255)   @unique(map: "session_token_key")
+    expiresAt Timestamptz(3) @map("expires_at")
+    ipAddress VarChar(255)?  @map("ip_address")
+    userAgent VarChar(255)?  @map("user_agent")
+    createdAt Timestamptz(3) @map("created_at")
+    updatedAt Timestamptz(3) @map("updated_at")
+
+    @@index([userId], map: "session_userId_idx")
+    @@map("session")
+  }
+
+  model Account {
+    id                    VarChar(255)    @id(map: "account_pkey")
+    userId                Uuid            @map("user_id")
+    user                  Users           @relation(fields: [userId], references: [id], onDelete: Cascade, map: "account_user_id_fkey", index: false)
+    issuer                VarChar(255)
+    accountId             VarChar(255)    @map("account_id")
+    providerId            VarChar(255)    @map("provider_id")
+    accessToken           VarChar(500)?   @map("access_token")
+    refreshToken          VarChar(500)?   @map("refresh_token")
+    accessTokenExpiresAt  Timestamptz(3)? @map("access_token_expires_at")
+    refreshTokenExpiresAt Timestamptz(3)? @map("refresh_token_expires_at")
+    scope                 VarChar(255)?
+    idToken               VarChar(500)?   @map("id_token")
+    password              VarChar(255)?
+    createdAt             Timestamptz(3)  @map("created_at")
+    updatedAt             Timestamptz(3)  @map("updated_at")
+
+    @@index([userId], map: "account_userId_idx")
+    @@map("account")
+  }
+
+  model Verification {
+    id         VarChar(255)   @id(map: "verification_pkey")
+    identifier VarChar(255)
+    value      VarChar(500)
+    expiresAt  Timestamptz(3) @map("expires_at")
+    createdAt  Timestamptz(3) @map("created_at")
+    updatedAt  Timestamptz(3) @map("updated_at")
+
+    @@index([identifier], map: "verification_identifier_idx")
+    @@map("verification")
   }
 
   native_enum UserRole {
