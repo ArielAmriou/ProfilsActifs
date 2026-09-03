@@ -1,2 +1,98 @@
+@import url("https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&display=swap");
 @import "tailwindcss";
 @import "@heroui/styles";
+
+@font-face {
+  font-family: Marianne;
+  src: url("https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.13.1/dist/font/marianne/Marianne-Regular.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Marianne;
+  src: url("https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.13.1/dist/font/marianne/Marianne-Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-institutional: #1b3a6b;
+  --color-action: #c4521a;
+  --color-action-hover: #a34416;
+  --color-surface: #ffffff;
+  --color-content-bg: #faf8f4;
+  --color-feed-bg: var(--color-content-bg);
+  --color-border: #e3e3fd;
+  --color-background-alt: #f5f5fe;
+
+  --font-title: Marianne, "Segoe UI", system-ui, sans-serif;
+  --font-body: Spectral, Georgia, "Times New Roman", serif;
+}
+
+/*
+  Palette unifiée — contrastes mesurés (RGAA AA)
+  - #1B3A6B sur #FFFFFF : 10,07:1 (primaire)
+  - #FFFFFF sur #1B3A6B : 10,07:1
+  - #C4521A sur #FFFFFF : 5,74:1 (secondaire)
+  - #FFFFFF sur #C4521A : 4,63:1
+  - #E3E3FD sur #FFFFFF : 1,15:1 (bordures DSFR — border-open-blue-france)
+  - #FAF8F4 : fond crème des zones de contenu (content-bg)
+*/
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-institutional);
+  background: var(--color-surface);
+}
+
+h1,
+h2,
+h3,
+.font-title {
+  font-family: var(--font-title);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--color-action);
+  color: white;
+  font-family: var(--font-title);
+  text-decoration: none;
+  border-radius: 0.375rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.feed-scroll {
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.feed-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.feed-slide {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}

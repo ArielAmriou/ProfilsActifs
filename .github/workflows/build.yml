@@ -1,0 +1,38 @@
+name: Build & Package ProfilsActifs
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build-and-artifact:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recovery code
+        uses: actions/checkout@v4
+
+      - name: Check build Backend
+        run: cd backend && docker build -t bun-backend .
+
+      - name: Check build Frontend
+        run: cd frontend && docker build -t bun-frontend .
+
+      - name: setup archive
+        run: |
+          mkdir profilsactifs-release
+          cp -r backend frontend db docker-compose.yml readme.md profilsactifs-release/
+          
+          cp .env.example profilsactifs-release/.env
+          
+          cp backend/.env.example profilsactifs-release/backend/.env
+
+      - name: Upload artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ProfilsActifs-Build
+          path: profilsactifs-release/
+          include-hidden-files: true
+          retention-days: 7
