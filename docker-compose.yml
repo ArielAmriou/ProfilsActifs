@@ -18,6 +18,8 @@ services:
       - db
     networks:
       - backendnet
+    env_file:
+      - ./backend/.env
     ports:
       - "8081:8081"
   

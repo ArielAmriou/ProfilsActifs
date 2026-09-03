@@ -3,13 +3,12 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { serializerCompiler, validatorCompiler } from "fastify-type-provider-zod";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { db } from "./prisma/db";
 
 const DEFAULT_PORT = 8081;
 const HOST = "0.0.0.0";
 const ADMIN_TOKEN = "admin";
-const prisma = new PrismaClient();
 
 const errorSchema = z.object({
   statusCode: z.number(),
@@ -33,6 +32,25 @@ function createApp() {
 
   fastify.setValidatorCompiler(validatorCompiler);
   fastify.setSerializerCompiler(serializerCompiler);
+  fastify.setErrorHandler((error, _request, reply) => {
+    const validationError = error as {
+      validation?: unknown;
+      validationContext?: string;
+      message?: string;
+    };
+
+    if (validationError.validation) {
+      const statusCode = validationError.validationContext === "body" ? 422 : 400;
+
+      return reply.code(statusCode).send({
+        statusCode,
+        error: statusCode === 422 ? "Unprocessable Entity" : "Bad Request",
+        message: validationError.message ?? "Request validation failed",
+      });
+    }
+
+    return reply.send(error);
+  });
 
   fastify.register(fastifySwagger, {
     openapi: {
@@ -65,7 +83,7 @@ function createApp() {
     },
     async (_request, reply) => {
       try {
-        await prisma.$queryRaw`SELECT 1`;
+        await db.orm.public.Users.first();
         return reply.code(200).send({ status: "ok", uptime: process.uptime() });
       } catch (error) {
         fastify.log.error(error, "Database health check failed");
@@ -161,6 +179,7 @@ export async function start() {
   try {
     const port = Number(process.env.PORT ?? 8081);
 
+    await app.ready();
     await app.listen({ port, host: "0.0.0.0" });
     app.log.info(`Server running at http://localhost:${port}`);
   } catch (error) {
