@@ -34,7 +34,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const redirect = searchParams.get("redirect") ?? "/";
+  const redirect = searchParams.get("redirect") ?? "/questionnaire";
 
   useEffect(() => {
     if (isAuthenticated) {
