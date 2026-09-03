@@ -3,70 +3,181 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState, type FormEvent } from "react";
-import { BrandBlock } from "@/components/layout/BrandBlock";
+import { ConnexionSidebar } from "@/components/AppSidebar";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuth } from "@/context/AuthContext";
+import { getHomeForRole, ROLE_KEY, type UserRole } from "@/types/auth";
 
-function ConnexionSidebar() {
+type AuthMode = "login" | "register";
+
+const inputClassName =
+  "mt-1.5 w-full rounded-lg border-2 border-border bg-surface px-3 py-2.5 text-institutional outline-none focus:border-action focus:ring-2 focus:ring-action/30";
+
+function RoleChoice({
+  value,
+  onChange,
+}: {
+  value: UserRole;
+  onChange: (role: UserRole) => void;
+}) {
+  const options: { role: UserRole; title: string; description: string }[] = [
+    {
+      role: "recruteur",
+      title: "Recruteur",
+      description: "Parcourez les profils, likez et enregistrez vos favoris.",
+    },
+    {
+      role: "demandeur",
+      title: "Demandeur d'emploi",
+      description: "Gérez votre profil, votre vidéo et votre questionnaire.",
+    },
+  ];
+
   return (
-    <>
-      <BrandBlock />
-
-      <blockquote className="mt-10 max-w-sm text-lg leading-relaxed text-institutional lg:mt-8">
-        « ProfilsActifs met en avant vos compétences professionnelles par la vidéo
-        pour faciliter la mise en relation avec les recruteurs. »
-      </blockquote>
-
-      <p className="mt-auto pt-8 text-xs text-institutional/60">
-        Démo : saisissez n&apos;importe quelle adresse e-mail et mot de passe pour vous
-        connecter.
-      </p>
-    </>
+    <fieldset className="space-y-3">
+      <legend className="font-title text-sm font-bold text-institutional">
+        Type de compte
+      </legend>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {options.map((option) => {
+          const selected = value === option.role;
+          return (
+            <label
+              key={option.role}
+              className={`cursor-pointer rounded-xl border-2 p-4 transition ${
+                selected
+                  ? "border-action bg-action/5"
+                  : "border-border bg-surface hover:border-institutional/30"
+              }`}
+            >
+              <input
+                type="radio"
+                name="role"
+                value={option.role}
+                checked={selected}
+                onChange={() => onChange(option.role)}
+                className="sr-only"
+              />
+              <span className="font-title block text-sm font-bold text-institutional">
+                {option.title}
+              </span>
+              <span className="mt-1 block text-xs leading-relaxed text-institutional/75">
+                {option.description}
+              </span>
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
   );
 }
 
-function LoginForm() {
+function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, isAuthenticated } = useAuth();
+  const { login, register, isAuthenticated, role } = useAuth();
+  const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [selectedRole, setSelectedRole] = useState<UserRole>("recruteur");
   const [error, setError] = useState("");
 
-  const redirect = searchParams.get("redirect") ?? "/";
+  const redirect = searchParams.get("redirect");
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace(redirect);
+    if (isAuthenticated && role) {
+      router.replace(redirect ?? getHomeForRole(role));
     }
-  }, [isAuthenticated, redirect, router]);
+  }, [isAuthenticated, redirect, role, router]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
-    const success = login(email, password);
-    if (success) {
-      router.push(redirect);
+    if (mode === "register" && password !== confirmPassword) {
+      setError("Les mots de passe ne correspondent pas.");
       return;
     }
 
-    setError("Veuillez renseigner votre adresse e-mail et votre mot de passe.");
+    const success =
+      mode === "login"
+        ? login(email, password)
+        : register(email, password, selectedRole);
+
+    if (!success) {
+      setError("Veuillez renseigner votre adresse e-mail et votre mot de passe.");
+      return;
+    }
+
+    const nextRole: UserRole =
+      mode === "register"
+        ? selectedRole
+        : localStorage.getItem(ROLE_KEY) === "demandeur"
+          ? "demandeur"
+          : "recruteur";
+
+    router.push(redirect ?? getHomeForRole(nextRole));
   };
 
   return (
     <PageLayout sidebar={<ConnexionSidebar />}>
       <div className="flex flex-1 items-center justify-center px-6 py-12">
-        <ContentCard className="w-full max-w-md">
+        <ContentCard className="w-full max-w-lg">
           <h1 className="font-title text-2xl font-bold text-institutional">
-            Connexion à ProfilsActifs
+            {mode === "login" ? "Connexion à ProfilsActifs" : "Créer un compte"}
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-institutional/80">
-            Connectez-vous pour liker un profil ou l&apos;ajouter à vos favoris.
+            {mode === "login"
+              ? "Connectez-vous pour accéder à votre espace."
+              : "Choisissez votre type de compte pour commencer."}
           </p>
 
+          <div
+            className="mt-6 flex rounded-lg border-2 border-border bg-content-bg p-1"
+            role="tablist"
+            aria-label="Mode d'authentification"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "login"}
+              onClick={() => {
+                setMode("login");
+                setError("");
+              }}
+              className={`font-title flex-1 rounded-md px-3 py-2 text-sm font-bold transition ${
+                mode === "login"
+                  ? "bg-action text-white"
+                  : "text-institutional hover:bg-surface"
+              }`}
+            >
+              Se connecter
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "register"}
+              onClick={() => {
+                setMode("register");
+                setError("");
+              }}
+              className={`font-title flex-1 rounded-md px-3 py-2 text-sm font-bold transition ${
+                mode === "register"
+                  ? "bg-action text-white"
+                  : "text-institutional hover:bg-surface"
+              }`}
+            >
+              Créer un compte
+            </button>
+          </div>
+
           <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
+            {mode === "register" && (
+              <RoleChoice value={selectedRole} onChange={setSelectedRole} />
+            )}
+
             <div>
               <label htmlFor="email" className="font-title block text-sm font-bold">
                 Adresse e-mail
@@ -79,7 +190,7 @@ function LoginForm() {
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="mt-1.5 w-full rounded-lg border-2 border-border bg-surface px-3 py-2.5 text-institutional outline-none focus:border-action focus:ring-2 focus:ring-action/30"
+                className={inputClassName}
               />
             </div>
 
@@ -91,13 +202,34 @@ function LoginForm() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
                 required
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="mt-1.5 w-full rounded-lg border-2 border-border bg-surface px-3 py-2.5 text-institutional outline-none focus:border-action focus:ring-2 focus:ring-action/30"
+                className={inputClassName}
               />
             </div>
+
+            {mode === "register" && (
+              <div>
+                <label
+                  htmlFor="confirmPassword"
+                  className="font-title block text-sm font-bold"
+                >
+                  Confirmer le mot de passe
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  className={inputClassName}
+                />
+              </div>
+            )}
 
             {error && (
               <p role="alert" className="rounded-lg bg-action/10 px-3 py-2 text-sm text-action">
@@ -109,13 +241,13 @@ function LoginForm() {
               type="submit"
               className="font-title w-full rounded-lg bg-action px-4 py-3 text-sm font-bold text-white transition hover:bg-action-hover"
             >
-              Se connecter
+              {mode === "login" ? "Se connecter" : "Créer mon compte"}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm">
             <Link href="/" className="font-title font-bold text-institutional underline">
-              Retour aux profils mis en avant
+              Retour à l&apos;accueil
             </Link>
           </p>
         </ContentCard>
@@ -135,7 +267,7 @@ export default function ConnexionPage() {
         </div>
       }
     >
-      <LoginForm />
+      <AuthForm />
     </Suspense>
   );
 }

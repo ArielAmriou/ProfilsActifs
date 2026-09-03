@@ -25,6 +25,7 @@ ENV NODE_ENV=production
 # copy production dependencies and source code into final image
 COPY --from=build /usr/src/app/.next/standalone ./
 COPY --from=build /usr/src/app/.next/static ./.next/static
+COPY --from=build /usr/src/app/public ./public
 
 # run the app
 USER bun

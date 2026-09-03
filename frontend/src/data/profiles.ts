@@ -1,3 +1,5 @@
+import { EXAMPLE_VIDEO_URL } from "@/data/media";
+
 export interface Profile {
   id: string;
   name: string;
@@ -20,8 +22,7 @@ const BASE_PROFILES: Profile[] = [
     location: "Lyon (69)",
     skills: ["Maintenance préventive", "Automatisme", "Soudure TIG"],
     likes: 142,
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    videoUrl: EXAMPLE_VIDEO_URL,
     subtitlesUrl: "/subtitles/amine-benali.vtt",
     certified: true,
   },
@@ -33,8 +34,7 @@ const BASE_PROFILES: Profile[] = [
     location: "Nantes (44)",
     skills: ["Accueil", "Anglais C1", "Suite Office"],
     likes: 89,
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    videoUrl: EXAMPLE_VIDEO_URL,
     certified: false,
   },
   {
@@ -45,8 +45,7 @@ const BASE_PROFILES: Profile[] = [
     location: "Marseille (13)",
     skills: ["Câblage", "Normes NF C 15-100", "Lecture de plans"],
     likes: 203,
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+    videoUrl: EXAMPLE_VIDEO_URL,
     certified: true,
   },
   {
@@ -57,8 +56,7 @@ const BASE_PROFILES: Profile[] = [
     location: "Tours (37)",
     skills: ["Soins de base", "Relation patient", "Hygiène hospitalière"],
     likes: 167,
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    videoUrl: EXAMPLE_VIDEO_URL,
     certified: true,
   },
   {
@@ -69,8 +67,7 @@ const BASE_PROFILES: Profile[] = [
     location: "Lille (59)",
     skills: ["JavaScript", "React", "Accessibilité web"],
     likes: 56,
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+    videoUrl: EXAMPLE_VIDEO_URL,
     certified: false,
   },
 ];
@@ -85,4 +82,13 @@ export function getProfileBatch(page: number, pageSize = 3): Profile[] {
 
 export function getInitialProfiles(): Profile[] {
   return BASE_PROFILES;
+}
+
+export function getProfileBaseId(profileId: string): string {
+  return profileId.split("-")[0] ?? profileId;
+}
+
+export function getProfileById(profileId: string): Profile | null {
+  const baseId = getProfileBaseId(profileId);
+  return BASE_PROFILES.find((profile) => profile.id === baseId) ?? null;
 }
