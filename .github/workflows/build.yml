@@ -19,10 +19,14 @@ jobs:
       - name: Check build Frontend
         run: cd frontend && docker build -t bun-frontend .
 
-      - name: Archive
+      - name: Préparation de l'archive
         run: |
           mkdir profilsactifs-release
           cp -r backend frontend db docker-compose.yml readme.md profilsactifs-release/
+          
+          cp .env.example profilsactifs-release/.env
+          
+          cp backend/.env.example profilsactifs-release/backend/.env
 
       - name: Upload artefact
         uses: actions/upload-artifact@v4
