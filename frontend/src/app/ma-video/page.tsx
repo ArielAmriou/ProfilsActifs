@@ -76,12 +76,12 @@ export default function MaVideoPage() {
               <div className="mt-8">
                 <h2 className="font-title text-sm font-bold text-institutional">Aperçu</h2>
                 {videoUrl.trim() ? (
-                  <div className="mt-3 overflow-hidden rounded-2xl border-2 border-border bg-institutional">
+                  <div className="mt-3 w-fit overflow-hidden rounded-2xl border-2 border-border bg-institutional">
                     <video
                       src={videoUrl}
                       controls
                       playsInline
-                      className="aspect-[9/16] w-full max-w-sm object-cover"
+                      className="aspect-[9/16] h-auto w-48 object-cover sm:w-56"
                     >
                       Votre navigateur ne supporte pas la lecture vidéo.
                     </video>
