@@ -19,7 +19,7 @@ jobs:
       - name: Check build Frontend
         run: cd frontend && docker build -t bun-frontend .
 
-      - name: Préparation de l'archive
+      - name: setup archive
         run: |
           mkdir profilsactifs-release
           cp -r backend frontend db docker-compose.yml readme.md profilsactifs-release/
@@ -33,4 +33,5 @@ jobs:
         with:
           name: ProfilsActifs-Build
           path: profilsactifs-release/
+          include-hidden-files: true
           retention-days: 7
