@@ -84,7 +84,7 @@ function AuthForm() {
   const [selectedRole, setSelectedRole] = useState<UserRole>("recruteur");
   const [error, setError] = useState("");
 
-  const redirect = searchParams.get("redirect");
+  const redirect = searchParams.get("redirect") ?? "/questionnaire";
 
   useEffect(() => {
     if (isAuthenticated && role) {

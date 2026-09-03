@@ -11,6 +11,7 @@ export interface DemandeurProfile {
   videoUrl: string;
   likes: number;
   favorites: number;
+  isCertified?: boolean;
 }
 
 export const AUTH_KEY = "profilsactifs-auth";
@@ -27,6 +28,7 @@ export const DEFAULT_DEMANDEUR_PROFILE: DemandeurProfile = {
   videoUrl: EXAMPLE_VIDEO_URL,
   likes: 0,
   favorites: 0,
+  isCertified: false,
 };
 
 export function getHomeForRole(role: UserRole): string {

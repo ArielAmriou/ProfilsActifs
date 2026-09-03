@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "ProfilsActifs",
-  description:
+  description:                                                                                                                  
     "ProfilsActifs met en avant les compétences des demandeurs d'emploi par la vidéo.",
 };
 

@@ -8,6 +8,7 @@ import { RequireRole } from "@/components/RequireRole";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuth } from "@/context/AuthContext";
+import { CertifiedBadge } from "@/components/Certif";
 
 const inputClassName =
   "mt-1.5 w-full rounded-lg border-2 border-border bg-surface px-3 py-2.5 text-institutional outline-none focus:border-action focus:ring-2 focus:ring-action/30";
@@ -30,12 +31,17 @@ export default function ProfilPage() {
 
   return (
     <>
+    
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
         <RequireRole allowed={["demandeur"]}>
           <HeaderBar />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
-              <h1 className="font-title text-2xl font-bold text-institutional">Profil</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="font-title text-2xl font-bold text-institutional">Profil</h1>
+                {demandeurProfile.isCertified && <CertifiedBadge />}
+              </div>
+              
               <p className="mt-2 text-sm text-institutional/80">
                 Modifiez vos informations et consultez vos statistiques.
               </p>
