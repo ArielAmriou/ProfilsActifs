@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ContentCard } from "./layout/ContentCard";
+import { useAuth } from "@/context/AuthContext";
 
 export type QuestionType = {
   noq: number;
@@ -28,6 +29,7 @@ export const questions: QuestionType[] = [
 
 export function Questionnaire() {
   const router = useRouter();
+  const { updateDemandeurProfile } = useAuth(); 
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -40,7 +42,8 @@ export function Questionnaire() {
     if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      router.push("/");
+      updateDemandeurProfile({ isCertified: true }); 
+      router.push("/profil");
     }
   };
 
@@ -118,13 +121,23 @@ export function Questionnaire() {
         >
           Précédent
         </button>
-        <button
-          onClick={handleNext}
-          disabled={!answers[currentQuestionData.noq]}
-          className="font-title rounded-full bg-action px-6 py-2.5 text-sm font-bold text-white transition enabled:hover:bg-action-hover disabled:opacity-50"
-        >
-          {currentQuestionIndex === TOTAL_QUESTIONS - 1 ? "Terminer" : "Suivant"}
-        </button>
+        
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push("/profil")} 
+            className="font-title rounded-full border-2 border-border bg-surface px-6 py-2.5 text-sm font-bold text-institutional transition hover:border-institutional"
+          >
+            Plus tard
+          </button>
+          
+          <button
+            onClick={handleNext}
+            disabled={!answers[currentQuestionData.noq]}
+            className="font-title rounded-full bg-action px-6 py-2.5 text-sm font-bold text-white transition enabled:hover:bg-action-hover disabled:opacity-50"
+          >
+            {currentQuestionIndex === TOTAL_QUESTIONS - 1 ? "Terminer" : "Suivant"}
+          </button>
+        </div>
       </div>
     </ContentCard>
   );

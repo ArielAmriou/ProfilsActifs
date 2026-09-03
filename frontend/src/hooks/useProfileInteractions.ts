@@ -1,59 +1,48 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-
-interface InteractionState {
-  liked: boolean;
-  favorited: boolean;
-  likeCount: number;
-}
-
-type InteractionsMap = Record<string, InteractionState>;
-
-const STORAGE_KEY = "profilsactifs-interactions";
-
-function readStorage(): InteractionsMap {
-  if (typeof window === "undefined") {
-    return {};
-  }
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}") as InteractionsMap;
-  } catch {
-    return {};
-  }
-}
-
-function writeStorage(data: InteractionsMap) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
+import { useAuth } from "@/context/AuthContext";
+import {
+  getDefaultInteractionState,
+  readInteractions,
+  writeInteractions,
+  type InteractionState,
+} from "@/lib/interactions";
 
 export function useProfileInteractions(profileId: string, initialLikes: number) {
-  const [state, setState] = useState<InteractionState>({
-    liked: false,
-    favorited: false,
-    likeCount: initialLikes,
-  });
+  const { isAuthenticated, email } = useAuth();
+  const [state, setState] = useState<InteractionState>(() =>
+    getDefaultInteractionState(initialLikes),
+  );
 
   useEffect(() => {
-    const stored = readStorage()[profileId];
-    if (stored) {
-      setState(stored);
-    } else {
-      setState({ liked: false, favorited: false, likeCount: initialLikes });
+    if (!isAuthenticated || !email) {
+      setState(getDefaultInteractionState(initialLikes));
+      return;
     }
-  }, [profileId, initialLikes]);
+
+    const stored = readInteractions(email)[profileId];
+    setState(stored ?? getDefaultInteractionState(initialLikes));
+  }, [profileId, initialLikes, isAuthenticated, email]);
 
   const persist = useCallback(
     (next: InteractionState) => {
-      const all = readStorage();
+      if (!email) {
+        return;
+      }
+      const all = readInteractions(email);
       all[profileId] = next;
-      writeStorage(all);
+      writeInteractions(email, all);
       setState(next);
     },
-    [profileId],
+    [email, profileId],
   );
 
   const toggleLike = useCallback(() => {
+    if (!isAuthenticated || !email) {
+      return false;
+    }
+
     const next: InteractionState = {
       ...state,
       liked: !state.liked,
@@ -61,16 +50,30 @@ export function useProfileInteractions(profileId: string, initialLikes: number) 
     };
     persist(next);
     return next.liked;
-  }, [persist, state]);
+  }, [email, isAuthenticated, persist, state]);
 
   const toggleFavorite = useCallback(() => {
+    if (!isAuthenticated || !email) {
+      return false;
+    }
+
     const next: InteractionState = {
       ...state,
       favorited: !state.favorited,
     };
     persist(next);
     return next.favorited;
-  }, [persist, state]);
+  }, [email, isAuthenticated, persist, state]);
 
-  return { ...state, toggleLike, toggleFavorite };
+  const visibleLiked = isAuthenticated && state.liked;
+  const visibleFavorited = isAuthenticated && state.favorited;
+
+  return {
+    liked: visibleLiked,
+    favorited: visibleFavorited,
+    likeCount: state.likeCount,
+    showLikeCount: isAuthenticated,
+    toggleLike,
+    toggleFavorite,
+  };
 }

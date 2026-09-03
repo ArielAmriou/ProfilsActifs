@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { getProfileBaseId } from "@/data/profiles";
 import { useAuth } from "@/context/AuthContext";
 import { useProfileInteractions } from "@/hooks/useProfileInteractions";
 import { LoginPromptModal } from "./LoginPromptModal";
@@ -49,9 +51,23 @@ function BookmarkIcon({ filled }: { filled: boolean }) {
   );
 }
 
+function PersonIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="size-7"
+      fill="currentColor"
+    >
+      <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+    </svg>
+  );
+}
+
 export function ActionBar({ profileId, initialLikes }: ActionBarProps) {
-  const { isAuthenticated } = useAuth();
-  const { liked, favorited, likeCount, toggleLike, toggleFavorite } =
+  const { isAuthenticated, role } = useAuth();
+  const showProfileLink = !isAuthenticated || role === "recruteur";
+  const { liked, favorited, likeCount, showLikeCount, toggleLike, toggleFavorite } =
     useProfileInteractions(profileId, initialLikes);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
@@ -83,9 +99,13 @@ export function ActionBar({ profileId, initialLikes }: ActionBarProps) {
           onClick={() => requireAuth("like", toggleLike)}
           aria-pressed={liked}
           aria-label={
-            liked
-              ? `Retirer le like (${likeCount} likes)`
-              : `Ajouter un like (${likeCount} likes)`
+            showLikeCount
+              ? liked
+                ? `Retirer le like (${likeCount} likes)`
+                : `Ajouter un like (${likeCount} likes)`
+              : liked
+                ? "Retirer le like"
+                : "Ajouter un like"
           }
           className="flex w-full flex-col items-center gap-1"
         >
@@ -94,9 +114,11 @@ export function ActionBar({ profileId, initialLikes }: ActionBarProps) {
           >
             <HeartIcon filled={liked} />
           </span>
-          <span className="font-title w-full text-center text-xs font-bold tabular-nums text-institutional">
-            {formatCount(likeCount)}
-          </span>
+          {showLikeCount && (
+            <span className="font-title w-full text-center text-xs font-bold tabular-nums text-institutional">
+              {formatCount(likeCount)}
+            </span>
+          )}
         </button>
 
         <button
@@ -117,6 +139,18 @@ export function ActionBar({ profileId, initialLikes }: ActionBarProps) {
             {favorited ? "Enregistré" : "Favori"}
           </span>
         </button>
+
+        {showProfileLink && (
+          <Link
+            href={`/profils/${getProfileBaseId(profileId)}`}
+            aria-label="Profil"
+            className="flex w-full flex-col items-center gap-1 no-underline"
+          >
+            <span className="flex size-12 items-center justify-center rounded-full border-2 border-border bg-surface text-institutional transition hover:border-action hover:text-action">
+              <PersonIcon />
+            </span>
+          </Link>
+        )}
       </div>
 
       {pendingAction && (
