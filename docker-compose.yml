@@ -13,6 +13,9 @@ services:
       - "5432:5432"
 
   back-bun:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     image: bun-backend
     depends_on:
       - db
@@ -24,6 +27,9 @@ services:
       - "8081:8081"
   
   front-bun:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     image: bun-frontend
     depends_on:
       - back-bun

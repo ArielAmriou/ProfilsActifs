@@ -9,7 +9,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
     {
       schema: {
         response: {
-          200: z.object({ status: z.literal("ok"), uptime: z.number() }),
+          200: z.object({ status: z.literal("ok"), uptime: z.number(), version: z.literal("0.1.0") }),
           503: z.object({
             status: z.literal("error"),
             message: z.string(),
@@ -20,7 +20,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
     async (_request, reply) => {
       try {
         await db.orm.public.Users.first();
-        return reply.code(200).send({ status: "ok", uptime: process.uptime() });
+        return reply.code(200).send({ status: "ok", uptime: process.uptime(), version: "0.1.0" });
       } catch (error) {
         fastify.log.error(error, "Database health check failed");
         return reply
