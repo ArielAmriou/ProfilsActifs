@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import { ContentCard } from "../layout/ContentCard";
 import { useAuth } from "@/context/AuthContext";
@@ -42,31 +42,94 @@ function QuestionName({currentQuestionData} : {currentQuestionData: QuestionType
   )
 }
 
-export function Questionnaire() {
+function QuestionChoice({currentQuestionData, answers, setAnswers}: {currentQuestionData: QuestionType, answers: Record<number, string>, setAnswers: Dispatch<SetStateAction<Record<number, string>>>})
+{
+  return (
+    currentQuestionData.options.map((option) => (
+      <label
+        key={option}
+        className={`flex cursor-pointer items-center gap-4 rounded-xl border-2 p-4 transition-all ${
+          answers[currentQuestionData.noq] === option
+            ? "border-action bg-action/5"
+            : "border-border hover:border-institutional/30"
+        }`}
+      >
+        <input
+          type="radio"
+          name={`question-${currentQuestionData.noq}`}
+          value={option}
+          checked={answers[currentQuestionData.noq] === option}
+          onChange={(e) =>
+            setAnswers({
+              ...answers,
+              [currentQuestionData.noq]: e.target.value,
+            })
+          }
+          className="size-5 text-action accent-action"
+        />
+        <span className="font-title font-medium text-institutional">
+          {option}
+        </span>
+      </label>
+    ))
+  )
+}
+
+function EndOfSurvey({currentQuestionIndex, setCurrentQuestionIndex, currentQuestionData, answers, totalQuestions}: {currentQuestionIndex: number, setCurrentQuestionIndex: Dispatch<SetStateAction<number>>, currentQuestionData: QuestionType, answers: Record<number, string>, totalQuestions: number})
+{
   const router = useRouter();
-  const { updateDemandeurProfile } = useAuth(); 
-  
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-
-  const TOTAL_QUESTIONS = questions.length;
-  const currentQuestionData = questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / TOTAL_QUESTIONS) * 100;
-
+  const { updateDemandeurProfile } = useAuth();
   const handleNext = () => {
-    if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
+    if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
       updateDemandeurProfile({ isCertified: true }); 
       router.push("/profil");
     }
   };
-
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prev) => prev - 1);
     }
   };
+
+  return (
+    <div className="mt-10 flex items-center justify-between border-t border-border pt-6">
+      <button
+        onClick={handlePrevious}
+        disabled={currentQuestionIndex === 0}
+        className="font-title rounded-full border-2 border-border bg-surface px-6 py-2.5 text-sm font-bold text-institutional transition enabled:hover:border-institutional disabled:opacity-50"
+      >
+        Précédent
+      </button>
+      
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => router.push("/profil")} 
+          className="font-title rounded-full border-2 border-border bg-surface px-6 py-2.5 text-sm font-bold text-institutional transition hover:border-institutional"
+        >
+          Plus tard
+        </button>
+        
+        <button
+          onClick={handleNext}
+          disabled={!answers[currentQuestionData.noq]}
+          className="font-title rounded-full bg-action px-6 py-2.5 text-sm font-bold text-white transition enabled:hover:bg-action-hover disabled:opacity-50"
+        >
+          {currentQuestionIndex === totalQuestions - 1 ? "Terminer" : "Suivant"}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export function Questionnaire()
+{
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const TOTAL_QUESTIONS = questions.length;
+  const currentQuestionData = questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / TOTAL_QUESTIONS) * 100;
 
   if (!currentQuestionData)
     return null;
@@ -80,64 +143,21 @@ export function Questionnaire() {
       />
       <div className="min-h-62.5">
         <QuestionName currentQuestionData={currentQuestionData}/>
-
         <div className="space-y-3">
-          {currentQuestionData.options.map((option) => (
-            <label
-              key={option}
-              className={`flex cursor-pointer items-center gap-4 rounded-xl border-2 p-4 transition-all ${
-                answers[currentQuestionData.noq] === option
-                  ? "border-action bg-action/5"
-                  : "border-border hover:border-institutional/30"
-              }`}
-            >
-              <input
-                type="radio"
-                name={`question-${currentQuestionData.noq}`}
-                value={option}
-                checked={answers[currentQuestionData.noq] === option}
-                onChange={(e) =>
-                  setAnswers({
-                    ...answers,
-                    [currentQuestionData.noq]: e.target.value,
-                  })
-                }
-                className="size-5 text-action accent-action"
-              />
-              <span className="font-title font-medium text-institutional">
-                {option}
-              </span>
-            </label>
-          ))}
+          <QuestionChoice 
+            currentQuestionData={currentQuestionData}
+            answers={answers}
+            setAnswers={setAnswers}
+          />
         </div>
       </div>
-
-      <div className="mt-10 flex items-center justify-between border-t border-border pt-6">
-        <button
-          onClick={handlePrevious}
-          disabled={currentQuestionIndex === 0}
-          className="font-title rounded-full border-2 border-border bg-surface px-6 py-2.5 text-sm font-bold text-institutional transition enabled:hover:border-institutional disabled:opacity-50"
-        >
-          Précédent
-        </button>
-        
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push("/profil")} 
-            className="font-title rounded-full border-2 border-border bg-surface px-6 py-2.5 text-sm font-bold text-institutional transition hover:border-institutional"
-          >
-            Plus tard
-          </button>
-          
-          <button
-            onClick={handleNext}
-            disabled={!answers[currentQuestionData.noq]}
-            className="font-title rounded-full bg-action px-6 py-2.5 text-sm font-bold text-white transition enabled:hover:bg-action-hover disabled:opacity-50"
-          >
-            {currentQuestionIndex === TOTAL_QUESTIONS - 1 ? "Terminer" : "Suivant"}
-          </button>
-        </div>
-      </div>
+      <EndOfSurvey
+        currentQuestionIndex={currentQuestionIndex}
+        setCurrentQuestionIndex={setCurrentQuestionIndex}
+        currentQuestionData={currentQuestionData}
+        answers={answers}
+        totalQuestions={TOTAL_QUESTIONS}
+      />
     </ContentCard>
   );
 }
