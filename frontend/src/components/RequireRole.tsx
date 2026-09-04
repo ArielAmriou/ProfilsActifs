@@ -12,9 +12,11 @@ interface RequireRoleProps {
 
 export function RequireRole({ allowed, children }: RequireRoleProps) {
   const router = useRouter();
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, isLoading, role } = useAuth();
 
   useEffect(() => {
+    if (isLoading) return;
+
     if (!isAuthenticated) {
       router.replace("/connexion");
       return;
@@ -23,9 +25,9 @@ export function RequireRole({ allowed, children }: RequireRoleProps) {
     if (role && !allowed.includes(role)) {
       router.replace(getHomeForRole(role));
     }
-  }, [allowed, isAuthenticated, role, router]);
+  }, [allowed, isAuthenticated, isLoading, role, router]);
 
-  if (!isAuthenticated || !role || !allowed.includes(role)) {
+  if (isLoading || !isAuthenticated || !role || !allowed.includes(role)) {
     return (
       <div className="flex flex-1 items-center justify-center px-6 py-12">
         <p className="text-institutional" role="status">
@@ -46,13 +48,24 @@ interface BlockRoleProps {
 
 export function BlockRole({ blocked, redirectTo, children }: BlockRoleProps) {
   const router = useRouter();
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, isLoading, role } = useAuth();
 
   useEffect(() => {
+    if (isLoading) return;
     if (isAuthenticated && role === blocked) {
       router.replace(redirectTo ?? getHomeForRole(blocked));
     }
-  }, [blocked, isAuthenticated, redirectTo, role, router]);
+  }, [blocked, isAuthenticated, isLoading, redirectTo, role, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center px-6 py-12">
+        <p className="text-institutional" role="status">
+          Chargement…
+        </p>
+      </div>
+    );
+  }
 
   if (isAuthenticated && role === blocked) {
     return (
