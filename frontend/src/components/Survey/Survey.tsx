@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ContentCard } from "./layout/ContentCard";
+import { ContentCard } from "../layout/ContentCard";
 import { useAuth } from "@/context/AuthContext";
 
 export type QuestionType = {

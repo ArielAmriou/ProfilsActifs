@@ -1,4 +1,4 @@
-import { Questionnaire } from "@/components/Questionnary";
+import { Questionnaire } from "@/components/Survey/Survey";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { BrandBlock } from "@/components/layout/BrandBlock";
 import type { Metadata } from "next";
