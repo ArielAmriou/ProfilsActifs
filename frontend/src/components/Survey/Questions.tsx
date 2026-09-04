@@ -1,3 +1,10 @@
+/*
+** EPITECH PROJECT, 2026
+** ProfilsActifs
+** File description:
+** Questions
+*/
+
 export type QuestionType = {
   noq: number;
   intitulé: string;
