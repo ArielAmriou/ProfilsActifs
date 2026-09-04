@@ -10,6 +10,8 @@ import { LoginPromptModal } from "./LoginPromptModal";
 interface ActionBarProps {
   profileId: string;
   initialLikes: number;
+  profileName?: string;
+  isActive?: boolean;
 }
 
 type PendingAction = "like" | "favorite" | null;
@@ -64,7 +66,7 @@ function PersonIcon() {
   );
 }
 
-export function ActionBar({ profileId, initialLikes }: ActionBarProps) {
+export function ActionBar({ profileId, initialLikes, profileName, isActive = false }: ActionBarProps) {
   const { isAuthenticated, role } = useAuth();
   const showProfileLink = !isAuthenticated || role === "recruteur";
   const { liked, favorited, likeCount, showLikeCount, toggleLike, toggleFavorite } =
@@ -98,6 +100,7 @@ export function ActionBar({ profileId, initialLikes }: ActionBarProps) {
           type="button"
           onClick={() => requireAuth("like", toggleLike)}
           aria-pressed={liked}
+          tabIndex={isActive ? 0 : -1}
           aria-label={
             showLikeCount
               ? liked
@@ -115,7 +118,7 @@ export function ActionBar({ profileId, initialLikes }: ActionBarProps) {
             <HeartIcon filled={liked} />
           </span>
           {showLikeCount && (
-            <span className="font-title w-full text-center text-xs font-bold tabular-nums text-institutional">
+            <span className="font-title w-full text-center text-sm font-bold tabular-nums text-institutional">
               {formatCount(likeCount)}
             </span>
           )}
@@ -125,8 +128,15 @@ export function ActionBar({ profileId, initialLikes }: ActionBarProps) {
           type="button"
           onClick={() => requireAuth("favorite", toggleFavorite)}
           aria-pressed={favorited}
+          tabIndex={isActive ? 0 : -1}
           aria-label={
-            favorited ? "Retirer des favoris" : "Ajouter aux favoris"
+            profileName
+              ? favorited
+                ? `Retirer ${profileName} des favoris`
+                : `Ajouter ${profileName} aux favoris`
+              : favorited
+                ? "Retirer des favoris"
+                : "Ajouter aux favoris"
           }
           className="flex w-full flex-col items-center gap-1"
         >
@@ -135,7 +145,7 @@ export function ActionBar({ profileId, initialLikes }: ActionBarProps) {
           >
             <BookmarkIcon filled={favorited} />
           </span>
-          <span className="font-title w-full text-center text-xs font-bold text-institutional">
+          <span className="font-title w-full text-center text-sm font-bold text-institutional">
             {favorited ? "Enregistré" : "Favori"}
           </span>
         </button>
@@ -143,7 +153,8 @@ export function ActionBar({ profileId, initialLikes }: ActionBarProps) {
         {showProfileLink && (
           <Link
             href={`/profils/${getProfileBaseId(profileId)}`}
-            aria-label="Profil"
+            aria-label={profileName ? `Voir le profil de ${profileName}` : "Voir le profil"}
+            tabIndex={isActive ? 0 : -1}
             className="flex w-full flex-col items-center gap-1 no-underline"
           >
             <span className="flex size-12 items-center justify-center rounded-full border-2 border-border bg-surface text-institutional transition hover:border-action hover:text-action">

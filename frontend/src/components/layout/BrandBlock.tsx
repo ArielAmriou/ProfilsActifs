@@ -11,7 +11,7 @@ export function BrandBlock({ className = "" }: BrandBlockProps) {
       className={`block no-underline ${className}`}
       aria-label="ProfilsActifs — Accueil"
     >
-      <div className="rounded-lg border-2 border-border bg-surface px-4 py-3">
+      <div className="rounded-lg border-2 border-border bg-surface px-4 py-3" aria-hidden="true">
         <p className="font-title text-xs font-bold uppercase tracking-wide text-institutional">
           Ministère du Job et Bonheur
         </p>

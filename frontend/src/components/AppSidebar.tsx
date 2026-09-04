@@ -71,7 +71,7 @@ export function AppSidebar() {
       )}
 
       {isAuthenticated && (
-        <p className="mt-auto pt-8 text-xs leading-relaxed text-institutional/70">
+        <p className="mt-auto pt-8 text-sm leading-relaxed text-institutional/70">
           {role === "demandeur"
             ? "Gérez votre profil vidéo et complétez votre questionnaire."
             : "Valorisez vos compétences professionnelles par la vidéo."}
@@ -86,7 +86,7 @@ export function ConnexionSidebar() {
     <>
       <SidebarBrandAndQuote />
 
-      <p className="mt-auto pt-8 text-xs text-institutional/60">
+      <p className="mt-auto pt-8 text-sm text-institutional/60">
         Démo : saisissez n&apos;importe quelle adresse e-mail et mot de passe pour
         vous connecter ou créer un compte.
       </p>

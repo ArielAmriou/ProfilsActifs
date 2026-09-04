@@ -34,7 +34,7 @@ export function VideoSlide({ profile, isActive }: VideoSlideProps) {
       aria-label={`Profil de ${profile.name}`}
     >
       <div className="flex shrink-0 items-center gap-3 sm:gap-4">
-        <div className="relative aspect-[9/16] h-[calc(100dvh-3.25rem)] w-auto max-w-[calc(100vw-4.5rem)] overflow-hidden rounded-2xl border-2 border-border bg-institutional shadow-lg lg:h-[calc(100dvh-0.5rem)] lg:max-w-none">
+        <div className="relative aspect-[9/16] h-[calc(100dvh-3.25rem)] w-auto max-w-[calc(100vw-4.5rem)] shrink-0 overflow-hidden rounded-2xl border-2 border-border bg-black shadow-lg lg:h-[calc(100dvh-0.5rem)] lg:max-w-none">
           <video
             ref={videoRef}
             src={profile.videoUrl}
@@ -42,7 +42,7 @@ export function VideoSlide({ profile, isActive }: VideoSlideProps) {
             loop
             playsInline
             preload="auto"
-            className="relative z-0 size-full object-cover"
+            className="absolute inset-0 z-0 size-full object-cover"
             aria-label={`Vidéo de présentation de ${profile.name}`}
           >
             {profile.subtitlesUrl && (
@@ -61,7 +61,7 @@ export function VideoSlide({ profile, isActive }: VideoSlideProps) {
           <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
             {profile.certified && (
               <span
-                className="font-title shrink-0 rounded-full bg-action px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
+                className="font-title shrink-0 rounded-full bg-action px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-white"
                 aria-label="Profil certifié"
               >
                 Certifié
@@ -72,6 +72,7 @@ export function VideoSlide({ profile, isActive }: VideoSlideProps) {
               onClick={() => setMuted((value) => !value)}
               aria-pressed={!muted}
               aria-label={muted ? "Activer le son" : "Couper le son"}
+              tabIndex={isActive ? 0 : -1}
               className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-white/30 bg-institutional/80 text-white transition hover:bg-institutional"
             >
             {muted ? (
@@ -87,7 +88,7 @@ export function VideoSlide({ profile, isActive }: VideoSlideProps) {
           </div>
         </div>
 
-        <ActionBar profileId={profile.id} initialLikes={profile.likes} />
+        <ActionBar profileId={profile.id} initialLikes={profile.likes} profileName={profile.name} isActive={isActive} />
       </div>
     </article>
   );

@@ -16,6 +16,7 @@ export function RecruteurHomePage() {
         mainClassName="relative min-h-[100dvh]"
       >
         <BlockRole blocked="demandeur">
+          <h1 className="sr-only">Profils mis en avant — ProfilsActifs</h1>
           <HeaderBar />
           <Feed />
         </BlockRole>
