@@ -78,7 +78,7 @@ export default function FavorisPage() {
   return (
     <>
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
-        <RequireRole allowed={["recruteur"]}>
+        <RequireRole allowed={["recruiter"]}>
           <HeaderBar />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-4xl">

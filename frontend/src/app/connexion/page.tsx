@@ -7,7 +7,7 @@ import { ConnexionSidebar } from "@/components/AppSidebar";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuth } from "@/context/AuthContext";
-import { getHomeForRole, ROLE_KEY, type UserRole } from "@/types/auth";
+import { getHomeForRole, isUserRole, ROLE_KEY, type UserRole } from "@/types/auth";
 
 type AuthMode = "login" | "register";
 
@@ -23,12 +23,12 @@ function RoleChoice({
 }) {
   const options: { role: UserRole; title: string; description: string }[] = [
     {
-      role: "recruteur",
+      role: "recruiter",
       title: "Recruteur",
       description: "Parcourez les profils, likez et enregistrez vos favoris.",
     },
     {
-      role: "demandeur",
+      role: "jobseeker",
       title: "Demandeur d'emploi",
       description: "Gérez votre profil, votre vidéo et votre questionnaire.",
     },
@@ -81,7 +81,7 @@ function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [selectedRole, setSelectedRole] = useState<UserRole>("recruteur");
+  const [selectedRole, setSelectedRole] = useState<UserRole>("recruiter");
   const [error, setError] = useState("");
 
   const redirectParam = searchParams.get("redirect");
@@ -111,14 +111,15 @@ function AuthForm() {
       return;
     }
 
+    const storedRole = localStorage.getItem(ROLE_KEY);
     const nextRole: UserRole =
       mode === "register"
         ? selectedRole
-        : localStorage.getItem(ROLE_KEY) === "demandeur"
-          ? "demandeur"
-          : "recruteur";
+        : isUserRole(storedRole)
+          ? storedRole
+          : "recruiter";
 
-    // Recruteur -> / (catalogue) ; demandeur -> /profil
+    // recruiter -> / (catalogue) ; jobseeker -> /profil
     // Plus de redirection forcée vers /questionnaire
     router.push(redirectParam ?? getHomeForRole(nextRole));
   };

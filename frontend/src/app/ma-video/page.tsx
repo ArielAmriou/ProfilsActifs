@@ -14,17 +14,17 @@ const inputClassName =
   "mt-1.5 w-full rounded-lg border-2 border-border bg-surface px-3 py-2.5 text-institutional outline-none focus:border-action focus:ring-2 focus:ring-action/30";
 
 export default function MaVideoPage() {
-  const { demandeurProfile, updateDemandeurProfile } = useAuth();
-  const [videoUrl, setVideoUrl] = useState(demandeurProfile.videoUrl);
+  const { jobseekerProfile, updateJobseekerProfile } = useAuth();
+  const [videoLink, setVideoLink] = useState(jobseekerProfile.videoLink);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    setVideoUrl(demandeurProfile.videoUrl);
-  }, [demandeurProfile.videoUrl]);
+    setVideoLink(jobseekerProfile.videoLink);
+  }, [jobseekerProfile.videoLink]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    updateDemandeurProfile({ videoUrl: videoUrl.trim() });
+    updateJobseekerProfile({ videoLink: videoLink.trim() });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
@@ -32,7 +32,7 @@ export default function MaVideoPage() {
   return (
     <>
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
-        <RequireRole allowed={["demandeur"]}>
+        <RequireRole allowed={["jobseeker"]}>
           <HeaderBar />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
@@ -43,14 +43,14 @@ export default function MaVideoPage() {
 
               <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                 <div>
-                  <label htmlFor="videoUrl" className="font-title block text-sm font-bold">
+                  <label htmlFor="videoLink" className="font-title block text-sm font-bold">
                     URL de la vidéo
                   </label>
                   <input
-                    id="videoUrl"
+                    id="videoLink"
                     type="url"
-                    value={videoUrl}
-                    onChange={(event) => setVideoUrl(event.target.value)}
+                    value={videoLink}
+                    onChange={(event) => setVideoLink(event.target.value)}
                     placeholder={EXAMPLE_VIDEO_URL}
                     className={inputClassName}
                   />
@@ -75,10 +75,10 @@ export default function MaVideoPage() {
 
               <div className="mt-8">
                 <h2 className="font-title text-sm font-bold text-institutional">Aperçu</h2>
-                {videoUrl.trim() ? (
+                {videoLink.trim() ? (
                   <div className="mt-3 w-fit overflow-hidden rounded-2xl border-2 border-border bg-institutional">
                     <video
-                      src={videoUrl}
+                      src={videoLink}
                       controls
                       playsInline
                       className="aspect-[9/16] h-auto w-48 object-cover sm:w-56"

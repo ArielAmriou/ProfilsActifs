@@ -12,11 +12,11 @@ interface MobileNavItem {
 }
 
 const MOBILE_ITEMS: MobileNavItem[] = [
-  { label: "Profils", href: "/", roles: ["recruteur"] },
-  { label: "Favoris", href: "/favoris", roles: ["recruteur"] },
-  { label: "Profil", href: "/profil", roles: ["demandeur"] },
-  { label: "Ma vidéo", href: "/ma-video", roles: ["demandeur"] },
-  { label: "Questionnaire", href: "/questionnaire", roles: ["demandeur"] },
+  { label: "Profils", href: "/", roles: ["recruiter"] },
+  { label: "Favoris", href: "/favoris", roles: ["recruiter"] },
+  { label: "Profil", href: "/profil", roles: ["jobseeker"] },
+  { label: "Ma vidéo", href: "/ma-video", roles: ["jobseeker"] },
+  { label: "Questionnaire", href: "/questionnaire", roles: ["jobseeker"] },
 ];
 
 export function MobileBottomNav() {

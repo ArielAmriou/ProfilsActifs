@@ -26,7 +26,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   return (
     <>
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
-        <BlockRole blocked="demandeur">
+        <BlockRole blocked="jobseeker">
           <HeaderBar />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
@@ -55,7 +55,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
 
               <div className="mt-6 w-fit overflow-hidden rounded-2xl border-2 border-border bg-institutional">
                 <video
-                  src={profile.videoUrl}
+                  src={profile.videoLink}
                   controls
                   playsInline
                   className="aspect-[9/16] h-auto w-48 object-cover sm:w-56"

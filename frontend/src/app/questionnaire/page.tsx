@@ -1,32 +1,24 @@
+"use client";
+
+import { AppSidebar } from "@/components/AppSidebar";
+import { HeaderBar } from "@/components/HeaderBar";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { RequireRole } from "@/components/RequireRole";
 import { Questionnaire } from "@/components/Survey/Survey";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { BrandBlock } from "@/components/layout/BrandBlock";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Questionnaire — ProfilsActifs",
-};
-
-function QuestionnaireSidebar() {
-  return (
-    <>
-      <BrandBlock />
-      <div className="mt-10 lg:mt-8">
-        <h2 className="font-title text-xl font-bold text-institutional">Votre profil</h2>
-        <p className="mt-4 text-sm leading-relaxed text-institutional/80">
-          Complétez ce questionnaire pour finaliser votre inscription et accéder aux profils mis en avant.
-        </p>
-      </div>
-    </>
-  );
-}
 
 export default function QuestionnairePage() {
   return (
-    <PageLayout sidebar={<QuestionnaireSidebar />}>
-      <div className="flex flex-1 items-center justify-center p-4 py-12 lg:p-12">
-        <Questionnaire />
-      </div>
-    </PageLayout>
+    <>
+      <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
+        <RequireRole allowed={["jobseeker"]}>
+          <HeaderBar />
+          <div className="flex flex-1 items-center justify-center px-6 py-10 lg:px-10">
+            <Questionnaire />
+          </div>
+        </RequireRole>
+      </PageLayout>
+      <MobileBottomNav />
+    </>
   );
 }

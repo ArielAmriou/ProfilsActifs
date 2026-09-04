@@ -37,7 +37,7 @@ export function VideoSlide({ profile, isActive }: VideoSlideProps) {
         <div className="relative aspect-[9/16] h-[calc(100dvh-3.25rem)] w-auto max-w-[calc(100vw-4.5rem)] shrink-0 overflow-hidden rounded-2xl border-2 border-border bg-black shadow-lg lg:h-[calc(100dvh-0.5rem)] lg:max-w-none">
           <video
             ref={videoRef}
-            src={profile.videoUrl}
+            src={profile.videoLink}
             muted={muted}
             loop
             playsInline

@@ -10,11 +10,12 @@ import {
 } from "react";
 import {
   AUTH_KEY,
-  DEFAULT_DEMANDEUR_PROFILE,
-  DEMANDEUR_PROFILE_KEY,
+  DEFAULT_JOBSEEKER_PROFILE,
   EMAIL_KEY,
+  JOBSEEKER_PROFILE_KEY,
   ROLE_KEY,
-  type DemandeurProfile,
+  isUserRole,
+  type JobseekerProfile,
   type UserRole,
 } from "@/types/auth";
 
@@ -22,49 +23,49 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   role: UserRole | null;
   email: string | null;
-  demandeurProfile: DemandeurProfile;
+  jobseekerProfile: JobseekerProfile;
   login: (email: string, password: string) => boolean;
   register: (email: string, password: string, role: UserRole) => boolean;
   logout: () => void;
-  updateDemandeurProfile: (patch: Partial<DemandeurProfile>) => void;
+  updateJobseekerProfile: (patch: Partial<JobseekerProfile>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function readDemandeurProfile(): DemandeurProfile {
+function readJobseekerProfile(): JobseekerProfile {
   if (typeof window === "undefined") {
-    return DEFAULT_DEMANDEUR_PROFILE;
+    return DEFAULT_JOBSEEKER_PROFILE;
   }
   try {
-    const stored = localStorage.getItem(DEMANDEUR_PROFILE_KEY);
+    const stored = localStorage.getItem(JOBSEEKER_PROFILE_KEY);
     if (!stored) {
-      return DEFAULT_DEMANDEUR_PROFILE;
+      return DEFAULT_JOBSEEKER_PROFILE;
     }
-    return { ...DEFAULT_DEMANDEUR_PROFILE, ...JSON.parse(stored) } as DemandeurProfile;
+    return { ...DEFAULT_JOBSEEKER_PROFILE, ...JSON.parse(stored) } as JobseekerProfile;
   } catch {
-    return DEFAULT_DEMANDEUR_PROFILE;
+    return DEFAULT_JOBSEEKER_PROFILE;
   }
 }
 
-function writeDemandeurProfile(profile: DemandeurProfile) {
-  localStorage.setItem(DEMANDEUR_PROFILE_KEY, JSON.stringify(profile));
+function writeJobseekerProfile(profile: JobseekerProfile) {
+  localStorage.setItem(JOBSEEKER_PROFILE_KEY, JSON.stringify(profile));
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState<UserRole | null>(null);
   const [email, setEmail] = useState<string | null>(null);
-  const [demandeurProfile, setDemandeurProfile] = useState<DemandeurProfile>(
-    DEFAULT_DEMANDEUR_PROFILE,
+  const [jobseekerProfile, setJobseekerProfile] = useState<JobseekerProfile>(
+    DEFAULT_JOBSEEKER_PROFILE,
   );
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setIsAuthenticated(localStorage.getItem(AUTH_KEY) === "true");
     const storedRole = localStorage.getItem(ROLE_KEY);
-    setRole(storedRole === "recruteur" || storedRole === "demandeur" ? storedRole : null);
+    setRole(isUserRole(storedRole) ? storedRole : null);
     setEmail(localStorage.getItem(EMAIL_KEY));
-    setDemandeurProfile(readDemandeurProfile());
+    setJobseekerProfile(readJobseekerProfile());
     setHydrated(true);
   }, []);
 
@@ -87,8 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const storedRole = localStorage.getItem(ROLE_KEY);
-      const nextRole: UserRole =
-        storedRole === "recruteur" || storedRole === "demandeur" ? storedRole : "recruteur";
+      const nextRole: UserRole = isUserRole(storedRole) ? storedRole : "recruiter";
 
       persistSession(nextEmail, nextRole);
       return true;
@@ -104,10 +104,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       persistSession(nextEmail, nextRole);
 
-      if (nextRole === "demandeur") {
-        const profile = { ...DEFAULT_DEMANDEUR_PROFILE };
-        writeDemandeurProfile(profile);
-        setDemandeurProfile(profile);
+      if (nextRole === "jobseeker") {
+        const profile = { ...DEFAULT_JOBSEEKER_PROFILE };
+        writeJobseekerProfile(profile);
+        setJobseekerProfile(profile);
       }
 
       return true;
@@ -124,10 +124,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setEmail(null);
   }, []);
 
-  const updateDemandeurProfile = useCallback((patch: Partial<DemandeurProfile>) => {
-    setDemandeurProfile((current) => {
+  const updateJobseekerProfile = useCallback((patch: Partial<JobseekerProfile>) => {
+    setJobseekerProfile((current) => {
       const next = { ...current, ...patch };
-      writeDemandeurProfile(next);
+      writeJobseekerProfile(next);
       return next;
     });
   }, []);
@@ -137,22 +137,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: hydrated && isAuthenticated,
       role: hydrated ? role : null,
       email: hydrated ? email : null,
-      demandeurProfile: hydrated ? demandeurProfile : DEFAULT_DEMANDEUR_PROFILE,
+      jobseekerProfile: hydrated ? jobseekerProfile : DEFAULT_JOBSEEKER_PROFILE,
       login,
       register,
       logout,
-      updateDemandeurProfile,
+      updateJobseekerProfile,
     }),
     [
       hydrated,
       isAuthenticated,
       role,
       email,
-      demandeurProfile,
+      jobseekerProfile,
       login,
       register,
       logout,
-      updateDemandeurProfile,
+      updateJobseekerProfile,
     ],
   );
 

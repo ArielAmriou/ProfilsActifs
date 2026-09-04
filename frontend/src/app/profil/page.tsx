@@ -14,34 +14,38 @@ const inputClassName =
   "mt-1.5 w-full rounded-lg border-2 border-border bg-surface px-3 py-2.5 text-institutional outline-none focus:border-action focus:ring-2 focus:ring-action/30";
 
 export default function ProfilPage() {
-  const { demandeurProfile, updateDemandeurProfile, email } = useAuth();
-  const [form, setForm] = useState(demandeurProfile);
+  const { jobseekerProfile, updateJobseekerProfile, email } = useAuth();
+  const [form, setForm] = useState(jobseekerProfile);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    setForm(demandeurProfile);
-  }, [demandeurProfile]);
+    setForm(jobseekerProfile);
+  }, [jobseekerProfile]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    updateDemandeurProfile(form);
+    updateJobseekerProfile({
+      ...form,
+      firstname: form.firstname.trim(),
+      lastname: form.lastname.trim(),
+      name: form.name.trim(),
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
 
   return (
     <>
-    
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
-        <RequireRole allowed={["demandeur"]}>
+        <RequireRole allowed={["jobseeker"]}>
           <HeaderBar />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
               <div className="flex items-center gap-3">
                 <h1 className="font-title text-2xl font-bold text-institutional">Profil</h1>
-                {demandeurProfile.isCertified && <CertifiedBadge />}
+                {jobseekerProfile.certified && <CertifiedBadge />}
               </div>
-              
+
               <p className="mt-2 text-sm text-institutional/80">
                 Modifiez vos informations et consultez vos statistiques.
               </p>
@@ -52,7 +56,7 @@ export default function ProfilPage() {
                     Likes reçus
                   </p>
                   <p className="font-title mt-2 text-3xl font-bold text-action">
-                    {demandeurProfile.likes}
+                    {jobseekerProfile.likes}
                   </p>
                 </div>
                 <div className="rounded-xl border-2 border-border bg-content-bg p-4">
@@ -60,7 +64,7 @@ export default function ProfilPage() {
                     Mises en favori
                   </p>
                   <p className="font-title mt-2 text-3xl font-bold text-action">
-                    {demandeurProfile.favorites}
+                    {jobseekerProfile.favorites}
                   </p>
                 </div>
               </div>
@@ -79,16 +83,55 @@ export default function ProfilPage() {
                   />
                 </div>
 
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="firstname" className="font-title block text-sm font-bold">
+                      Prénom
+                    </label>
+                    <input
+                      id="firstname"
+                      name="firstname"
+                      autoComplete="given-name"
+                      value={form.firstname}
+                      onChange={(event) =>
+                        setForm({ ...form, firstname: event.target.value })
+                      }
+                      className={inputClassName}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastname" className="font-title block text-sm font-bold">
+                      Nom
+                    </label>
+                    <input
+                      id="lastname"
+                      name="lastname"
+                      autoComplete="family-name"
+                      value={form.lastname}
+                      onChange={(event) =>
+                        setForm({ ...form, lastname: event.target.value })
+                      }
+                      className={inputClassName}
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label htmlFor="name" className="font-title block text-sm font-bold">
-                    Nom complet
+                    Nom d&apos;utilisateur
                   </label>
                   <input
                     id="name"
+                    name="name"
+                    autoComplete="username"
                     value={form.name}
                     onChange={(event) => setForm({ ...form, name: event.target.value })}
                     className={inputClassName}
+                    placeholder="Ex. : amine.benali"
                   />
+                  <p className="mt-1.5 text-xs text-institutional/65">
+                    Identifiant affiché (indépendant du prénom et du nom).
+                  </p>
                 </div>
 
                 <div>
@@ -97,6 +140,7 @@ export default function ProfilPage() {
                   </label>
                   <input
                     id="title"
+                    name="title"
                     value={form.title}
                     onChange={(event) => setForm({ ...form, title: event.target.value })}
                     className={inputClassName}
@@ -109,6 +153,7 @@ export default function ProfilPage() {
                   </label>
                   <input
                     id="sector"
+                    name="sector"
                     value={form.sector}
                     onChange={(event) => setForm({ ...form, sector: event.target.value })}
                     className={inputClassName}
@@ -121,6 +166,7 @@ export default function ProfilPage() {
                   </label>
                   <input
                     id="location"
+                    name="location"
                     value={form.location}
                     onChange={(event) => setForm({ ...form, location: event.target.value })}
                     className={inputClassName}
@@ -133,6 +179,7 @@ export default function ProfilPage() {
                   </label>
                   <textarea
                     id="skills"
+                    name="skills"
                     rows={3}
                     value={form.skills}
                     onChange={(event) => setForm({ ...form, skills: event.target.value })}

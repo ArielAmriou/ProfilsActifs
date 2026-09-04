@@ -44,7 +44,7 @@ function QuestionName({currentQuestionData} : {currentQuestionData: QuestionType
 
 export function Questionnaire() {
   const router = useRouter();
-  const { updateDemandeurProfile } = useAuth(); 
+  const { updateJobseekerProfile } = useAuth(); 
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -57,7 +57,7 @@ export function Questionnaire() {
     if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      updateDemandeurProfile({ isCertified: true }); 
+      updateJobseekerProfile({ certified: true }); 
       router.push("/profil");
     }
   };
