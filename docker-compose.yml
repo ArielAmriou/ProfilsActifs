@@ -7,21 +7,28 @@ services:
     env_file:
       - .env
     volumes:
-      - ./db/init_tables.sql:/docker-entrypoint-initdb.d/schema.sql
       - postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
   back-bun:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     image: bun-backend
     depends_on:
       - db
     networks:
       - backendnet
+    env_file:
+      - ./backend/.env
     ports:
       - "8081:8081"
   
   front-bun:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     image: bun-frontend
     depends_on:
       - back-bun

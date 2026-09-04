@@ -2,19 +2,10 @@
 
 ## Usage
 
-Build back-end docker image
-
 ```Bash
-cd backend && docker build -t bun-backend .
-```
+# Build back-end and front-end docker image
+docker compose build
 
-Build front-end docker image
-
-```Bash
-cd frontend && docker build -t bun-frontend .
-```
-
-Run ProfilsActifs
-```Bash
+# Run ProfilsActifs
 docker compose up
 ```

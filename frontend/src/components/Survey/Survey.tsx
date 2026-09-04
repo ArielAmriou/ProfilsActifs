@@ -2,30 +2,45 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ContentCard } from "./layout/ContentCard";
+import { ContentCard } from "../layout/ContentCard";
 import { useAuth } from "@/context/AuthContext";
+import { questions, type QuestionType } from "./Questions";
 
-export type QuestionType = {
-  noq: number;
-  intitulé: string;
-  content: string;
-  options: string[];
-};
 
-export const questions: QuestionType[] = [
-  {
-    noq: 1,
-    intitulé: "Quelle est votre principale compétence ?",
-    content: "Détaillez le domaine dans lequel vous excellez le plus.",
-    options: ["Développement Web", "Design", "Marketing", "Autre"],
-  },
-  {
-    noq: 2,
-    intitulé: "Combien d'années d'expérience avez-vous ?",
-    content: "Incluez vos stages et alternances.",
-    options: ["0-1 an", "2-5 ans", "5-10 ans", "+10 ans"],
-  }
-];
+function ProgressBar({currentQuestionIndex, progress, totalQuestions}: {currentQuestionIndex: number, progress: number, totalQuestions: number}) {
+  return (
+    <div className="mb-8">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="font-title text-sm font-bold text-institutional">
+          Question {currentQuestionIndex + 1} sur {totalQuestions}
+        </span>
+        <span className="font-title text-sm font-bold text-action">
+          {Math.round(progress)}%
+        </span>
+      </div>
+      <div className="h-3 w-full overflow-hidden rounded-full bg-border">
+        <div
+          className="h-full bg-action transition-all duration-300 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function QuestionName({currentQuestionData} : {currentQuestionData: QuestionType})
+{
+  return (
+    <div>
+      <h2 className="font-title mb-2 text-xl font-bold text-institutional">
+        {currentQuestionData.intitulé}
+      </h2>
+      <p className="mb-6 text-sm text-institutional/80">
+        {currentQuestionData.content}
+      </p>
+    </div>
+  )
+}
 
 export function Questionnaire() {
   const router = useRouter();
@@ -53,34 +68,18 @@ export function Questionnaire() {
     }
   };
 
-  if (!currentQuestionData) return null;
+  if (!currentQuestionData)
+    return null;
 
   return (
     <ContentCard className="w-full max-w-2xl shadow-sm">
-      <div className="mb-8">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="font-title text-sm font-bold text-institutional">
-            Question {currentQuestionIndex + 1} sur {TOTAL_QUESTIONS}
-          </span>
-          <span className="font-title text-sm font-bold text-action">
-            {Math.round(progress)}%
-          </span>
-        </div>
-        <div className="h-3 w-full overflow-hidden rounded-full bg-border">
-          <div
-            className="h-full bg-action transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="min-h-[250px]">
-        <h2 className="font-title mb-2 text-xl font-bold text-institutional">
-          {currentQuestionData.intitulé}
-        </h2>
-        <p className="mb-6 text-sm text-institutional/80">
-          {currentQuestionData.content}
-        </p>
+      <ProgressBar 
+        currentQuestionIndex={currentQuestionIndex}
+        totalQuestions={TOTAL_QUESTIONS}
+        progress={progress}
+      />
+      <div className="min-h-62.5">
+        <QuestionName currentQuestionData={currentQuestionData}/>
 
         <div className="space-y-3">
           {currentQuestionData.options.map((option) => (

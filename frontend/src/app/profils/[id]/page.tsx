@@ -53,12 +53,12 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
                 )}
               </div>
 
-              <div className="mt-6 overflow-hidden rounded-2xl border-2 border-border bg-institutional">
+              <div className="mt-6 w-fit overflow-hidden rounded-2xl border-2 border-border bg-institutional">
                 <video
                   src={profile.videoUrl}
                   controls
                   playsInline
-                  className="aspect-[9/16] w-full max-w-sm object-cover"
+                  className="aspect-[9/16] h-auto w-48 object-cover sm:w-56"
                 >
                   Votre navigateur ne supporte pas la lecture vidéo.
                 </video>

@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Users {
+  id            String     @id @default(uuid()) @db.Uuid
+  firstname     String     @db.VarChar(255)
+  lastname      String     @db.VarChar(255)
+  name          String     @db.VarChar(255)
+  email         String     @unique @db.VarChar(255)
+  emailVerified Boolean    @default(false) @map("email_verified")
+  image         String?    @db.VarChar(255)
+  role          UserRole
+  createdAt     DateTime   @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime   @map("updated_at") @db.Timestamptz(3)
+  birthdate     DateTime   @db.Timestamp(0)
+
+  answers       Answers[]
+  favorites     Favorites[]
+  likes         Likes[]
+  surveys       Surveys[]
+  videos        Videos?
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("users")
+}
+
+model Surveys {
+  id          String   @id @default(uuid()) @db.Uuid
+  createdBy   String   @map("created_by") @db.Uuid
+  date        DateTime @db.Timestamp(0)
+  title       String   @db.VarChar(255)
+  description String?  @db.VarChar(255)
+  questions   Questions[]
+  users       Users    @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+
+  @@map("surveys")
+}
+
+model Questions {
+  id       String   @id @default(uuid()) @db.Uuid
+  surveyId String   @map("survey_id") @db.Uuid
+  label    String   @db.VarChar(255)
+  answers  Answers[]
+  options  Options[]
+  survey   Surveys  @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@map("questions")
+}
+
+model Options {
+  id         String    @id @default(uuid()) @db.Uuid
+  questionId String    @map("question_id") @db.Uuid
+  option     String    @db.VarChar(255)
+  answers    Answers[]
+  question   Questions @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("options")
+}
+
+model Answers {
+  id         String    @id @default(uuid()) @db.Uuid
+  questionId String    @map("question_id") @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  optionId   String    @map("option_id") @db.Uuid
+  option     Options   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  question   Questions @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user       Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, userId])
+  @@map("answers")
+}
+
+model Videos {
+  id        String      @id @default(uuid()) @db.Uuid
+  userId    String      @unique @map("user_id") @db.Uuid
+  videoLink String      @map("video_link") @db.VarChar(255)
+  favorites Favorites[]
+  likes     Likes[]
+  user      Users       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("videos")
+}
+
+model Favorites {
+  videoId String @map("video_id") @db.Uuid
+  userId  String @map("user_id") @db.Uuid
+  user    Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video   Videos @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, userId])
+  @@map("favorites")
+}
+
+model Likes {
+  videoId String @map("video_id") @db.Uuid
+  userId  String @map("user_id") @db.Uuid
+  user    Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video   Videos @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, userId])
+  @@map("likes")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id") @db.Uuid
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @map("updated_at") @db.Timestamptz(3)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                     String    @id @default(uuid())
+  userId                 String    @map("user_id") @db.Uuid
+  user                   Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  issuer                 String
+  accountId              String    @map("account_id")
+  providerId             String    @map("provider_id")
+  accessToken            String?   @map("access_token")
+  refreshToken           String?   @map("refresh_token")
+  accessTokenExpiresAt   DateTime? @map("access_token_expires_at") @db.Timestamptz(3)
+  refreshTokenExpiresAt  DateTime? @map("refresh_token_expires_at") @db.Timestamptz(3)
+  scope                  String?
+  idToken                String?   @map("id_token")
+  password               String?
+  createdAt              DateTime  @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime  @map("updated_at") @db.Timestamptz(3)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt  DateTime @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @map("updated_at") @db.Timestamptz(3)
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+enum UserRole {
+  jobseeker
+  recruiter
+  admin
+
+  @@map("user_role")
+}
