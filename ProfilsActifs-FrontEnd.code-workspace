@@ -1,0 +1,12 @@
+{
+    "folders": [
+        {
+            "path": "frontend"
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/.git": true
+        }
+    }
+}
