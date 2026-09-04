@@ -84,13 +84,13 @@ function AuthForm() {
   const [selectedRole, setSelectedRole] = useState<UserRole>("recruteur");
   const [error, setError] = useState("");
 
-  const redirect = searchParams.get("redirect") ?? "/questionnaire";
+  const redirectParam = searchParams.get("redirect");
 
   useEffect(() => {
     if (isAuthenticated && role) {
-      router.replace(redirect ?? getHomeForRole(role));
+      router.replace(redirectParam ?? getHomeForRole(role));
     }
-  }, [isAuthenticated, redirect, role, router]);
+  }, [isAuthenticated, redirectParam, role, router]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -118,7 +118,9 @@ function AuthForm() {
           ? "demandeur"
           : "recruteur";
 
-    router.push(redirect ?? getHomeForRole(nextRole));
+    // Recruteur -> / (catalogue) ; demandeur -> /profil
+    // Plus de redirection forcée vers /questionnaire
+    router.push(redirectParam ?? getHomeForRole(nextRole));
   };
 
   return (
