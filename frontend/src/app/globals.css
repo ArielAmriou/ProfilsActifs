@@ -45,18 +45,24 @@
 
 html {
   scroll-behavior: smooth;
-  scrollbar-width: none;
-  overflow: hidden;
-}
-
-html::-webkit-scrollbar {
-  display: none;
 }
 
 body {
   font-family: var(--font-body);
   color: var(--color-institutional);
   background: var(--color-surface);
+}
+
+/* Verrouille le scroll page uniquement sur le catalogue (feed) */
+html.feed-lock,
+html.feed-lock body {
+  overflow: hidden;
+  height: 100%;
+  scrollbar-width: none;
+}
+
+html.feed-lock::-webkit-scrollbar {
+  display: none;
 }
 
 h1,
