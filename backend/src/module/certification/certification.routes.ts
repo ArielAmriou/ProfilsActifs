@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { getCertificationData } from "../../services/certification.service";
 
 export async function certificationRoutes(fastify: FastifyInstance)
 {
@@ -11,7 +12,8 @@ export async function certificationRoutes(fastify: FastifyInstance)
             description: "Get the questions of the certification"
         },
         handler: async (request, reply) => {
-            //
+            const certifData = getCertificationData();
+            reply.send(certifData);
         }
     });
 }
