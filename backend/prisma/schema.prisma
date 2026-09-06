@@ -36,6 +36,7 @@ model Surveys {
   date        DateTime @db.Timestamp(0)
   title       String   @db.VarChar(255)
   description String?  @db.VarChar(255)
+  version     String   @default("1.0") @db.VarChar(50)
   questions   Questions[]
   users       Users    @relation(fields: [createdBy], references: [id], onDelete: Restrict)
 
