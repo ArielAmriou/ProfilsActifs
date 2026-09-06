@@ -7,9 +7,18 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { healthRoutes } from "./module/health/health";
 import { authRoutes } from "./module/auth/routes";
 import { auth } from "./middleware/better-auth";
+import { getCertificationData } from "./services/certification.service";
 
 async function createApp() {
   const fastify = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
+
+  try {
+    const certification = await getCertificationData();
+    fastify.log.info(`Questionnaire version '${certification.version}' chargé avec succès (${certification.questions.length} questions).`);
+  } catch (error) {
+    fastify.log.error(error, "Échec critique : impossible de démarrer sans un questionnaire valide.");
+    process.exit(1);
+  }
 
   fastify.setValidatorCompiler(validatorCompiler);
   fastify.setSerializerCompiler(serializerCompiler);
