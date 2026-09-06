@@ -8,6 +8,7 @@ import { healthRoutes } from "./module/health/health";
 import { authRoutes } from "./module/auth/routes";
 import { auth } from "./middleware/better-auth";
 import { getCertificationData } from "./services/certification.service";
+import { certificationRoutes } from "./module/certification/certification.routes";
 
 async function createApp() {
   const fastify = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
@@ -103,6 +104,7 @@ async function createApp() {
 
   await fastify.register(healthRoutes);
   await fastify.register(authRoutes);
+  await fastify.register(certificationRoutes);
 
   return fastify;
 }
