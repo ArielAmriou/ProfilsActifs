@@ -1,0 +1,49 @@
+{
+    "version": "1.0",
+    "questions": [
+        {
+            "id": "1",
+            "question": "Quel est votre niveau d'expérience en développement web ?",
+            "type": "single_choice",
+            "options": [
+                "Moins d'un an",
+                "Entre 1 et 3 ans",
+                "Plus de 3 ans"
+            ],
+            "weight": 10
+        },
+        {
+            "id": "2",
+            "question": "Lol",
+            "type": "single_choice",
+            "options": [
+                "Moins d'un an",
+                "Entre 1 et 3 ans",
+                "Plus de 3 ans"
+            ],
+            "weight": 10
+        },
+        {
+            "id": "3",
+            "question": "Lol2",
+            "type": "single_choice",
+            "options": [
+                "Moins d'un an",
+                "Entre 1 et 3 ans",
+                "Plus de 3 ans"
+            ],
+            "weight": 10
+        },
+        {
+            "id": "4",
+            "question": "Lol3",
+            "type": "single_choice",
+            "options": [
+                "Moins d'un an",
+                "Entre 1 et 3 ans",
+                "Plus de 3 ans"
+            ],
+            "weight": 10
+        }
+    ]
+}
