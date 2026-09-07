@@ -32,6 +32,8 @@ COPY --from=prerelease /usr/src/app/prisma.config.ts .
 COPY --from=prerelease /usr/src/app/package.json .
 COPY --from=prerelease /usr/src/app/certification ./certification
 
+RUN mkdir -p /usr/src/app/var/videos && chown -R bun:bun /usr/src/app/var
+
 # run the app
 USER bun
 EXPOSE 8081/tcp
