@@ -26,7 +26,7 @@ export function MobileBottomNav() {
   if (!isAuthenticated || !role) {
     return (
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-surface lg:hidden"
+        className="fixed inset-x-0 bottom-10 z-40 flex border-t border-border bg-surface lg:bottom-0 lg:mb-10 lg:hidden"
         aria-label="Navigation mobile"
       >
         <Link
@@ -50,7 +50,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-surface lg:hidden"
+      className="fixed inset-x-0 bottom-10 z-40 flex border-t border-border bg-surface lg:bottom-0 lg:mb-10 lg:hidden"
       aria-label="Navigation mobile"
     >
       {items.map((item) => {
