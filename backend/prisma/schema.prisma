@@ -78,13 +78,18 @@ model Answers {
 }
 
 model Videos {
-  id        String      @id @default(uuid()) @db.Uuid
-  userId    String      @unique @map("user_id") @db.Uuid
-  videoLink String      @map("video_link") @db.VarChar(255)
-  favorites Favorites[]
-  likes     Likes[]
-  user      Users       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String      @unique @map("user_id") @db.Uuid
+  providerName String      @map("provider_name") @db.VarChar(32)
+  providerId   String      @map("provider_id") @db.VarChar(255)
+  status       VideoStatus @default(PROCESSING)
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  favorites    Favorites[]
+  likes        Likes[]
+  user         Users       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([providerName, providerId])
   @@map("videos")
 }
 
@@ -154,6 +159,14 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum VideoStatus {
+  PROCESSING
+  READY
+  ERROR
+
+  @@map("video_status")
 }
 
 enum UserRole {

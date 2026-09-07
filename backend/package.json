@@ -23,5 +23,9 @@
     "fastify-type-provider-zod": "^7.0.0",
     "prisma": "^7.10.0",
     "zod": "^4.5.4"
+  },
+  "scripts": {
+    "migrate:videos": "bun run scripts/migrate-videos.ts",
+    "test": "bun test"
   }
 }
