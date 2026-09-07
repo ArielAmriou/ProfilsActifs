@@ -10,7 +10,6 @@ import { BlockRole } from "@/components/RequireRole";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
-import { useProfileVideo } from "@/hooks/useProfileVideo";
 import { fetchProfile, type Profile } from "@/lib/profiles-api";
 
 interface ProfileDetailPageProps {
@@ -21,7 +20,6 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   const { id } = use(params);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const video = useProfileVideo(profile?.id);
 
   useEffect(() => {
     let active = true;
@@ -86,7 +84,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
 
               <div className="mt-6 w-fit overflow-hidden rounded-2xl border-2 border-border bg-institutional">
                 <VideoPlayer
-                  video={video}
+                  video={profile.video}
                   label={`Vidéo de présentation de ${profile.name}`}
                   className="aspect-[9/16] h-auto w-48 object-cover sm:w-56"
                 />
