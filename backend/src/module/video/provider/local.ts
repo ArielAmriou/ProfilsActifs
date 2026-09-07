@@ -8,7 +8,14 @@ import {
   videoFileState,
   writeVideoFile,
 } from "../storage";
-import type { StreamingVideoProvider, VideoPlayback, VideoStatus, VideoUpload } from "./types";
+import type {
+  ByteRange,
+  StreamingVideoProvider,
+  VideoPayloadHead,
+  VideoPlayback,
+  VideoStatus,
+  VideoUpload,
+} from "./types";
 
 export const LOCAL_PROVIDER_NAME = "local";
 
@@ -52,13 +59,18 @@ export const localVideoProvider: StreamingVideoProvider = {
     await removeVideoFiles(id);
   },
 
-  async openStream(id: string): Promise<VideoPlayback> {
+  async head(id: string): Promise<VideoPayloadHead> {
     const meta = await readVideoMeta(id);
 
     if (!meta || (await videoFileState(id)) !== "READY") {
       throw new VideoNotFoundError(id);
     }
 
-    return { stream: openVideoStream(id), mimeType: meta.mimeType, size: meta.size };
+    return { mimeType: meta.mimeType, size: meta.size };
+  },
+
+  async openStream(id: string, range?: ByteRange): Promise<VideoPlayback> {
+    const { mimeType, size } = await this.head(id);
+    return { stream: openVideoStream(id, range), mimeType, size };
   },
 };

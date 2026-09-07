@@ -20,8 +20,19 @@ export interface VideoProvider {
   delete(id: string): Promise<void>;
 }
 
+export interface ByteRange {
+  start: number;
+  end: number;
+}
+
+export interface VideoPayloadHead {
+  mimeType: string;
+  size: number;
+}
+
 export interface StreamingVideoProvider extends VideoProvider {
-  openStream(id: string): Promise<VideoPlayback>;
+  head(id: string): Promise<VideoPayloadHead>;
+  openStream(id: string, range?: ByteRange): Promise<VideoPlayback>;
 }
 
 export function isStreamingProvider(

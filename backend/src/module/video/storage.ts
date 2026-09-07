@@ -87,9 +87,9 @@ export async function videoFileState(id: string): Promise<StorageState> {
   return "MISSING";
 }
 
-export function openVideoStream(id: string) {
+export function openVideoStream(id: string, range?: { start: number; end: number }) {
   assertStorageId(id);
-  return createReadStream(bytesPath(id));
+  return createReadStream(bytesPath(id), range);
 }
 
 export async function removeVideoFiles(id: string): Promise<void> {
