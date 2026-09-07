@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface LoginPromptModalProps {
   actionLabel: "liker ce profil" | "ajouter ce profil à vos favoris";
@@ -10,6 +11,11 @@ interface LoginPromptModalProps {
 
 export function LoginPromptModal({ actionLabel, onClose }: LoginPromptModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     closeButtonRef.current?.focus();
@@ -21,15 +27,18 @@ export function LoginPromptModal({ actionLabel, onClose }: LoginPromptModalProps
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
+    // Pas de body.style.overflow : le feed gère déjà le lock via html.feed-lock
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
     };
   }, [onClose]);
 
-  return (
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="presentation"
@@ -88,6 +97,7 @@ export function LoginPromptModal({ actionLabel, onClose }: LoginPromptModalProps
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -12,7 +12,7 @@ export async function certificationRoutes(fastify: FastifyInstance)
             description: "Get the questions of the certification"
         },
         handler: async (request, reply) => {
-            const certifData = getCertificationData();
+            const certifData = await getCertificationData();
             reply.send(certifData);
         }
     });
