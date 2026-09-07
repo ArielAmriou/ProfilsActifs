@@ -23,7 +23,7 @@ jobs:
       - name: setup archive
         run: |
           mkdir profilsactifs-release
-          cp -r backend frontend db docker-compose.yml readme.md profilsactifs-release/
+          cp -r backend frontend docker-compose.yml readme.md profilsactifs-release/
           
           cp .env.example profilsactifs-release/.env
           
