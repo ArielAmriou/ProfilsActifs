@@ -65,3 +65,45 @@ export async function fetchProfile(id: string): Promise<Profile | null> {
     return null;
   }
 }
+
+export interface MyProfile {
+  id: string;
+  email: string;
+  role: string;
+  firstname: string;
+  lastname: string;
+  name: string;
+  birthdate: string;
+  title: string | null;
+  sector: string | null;
+  location: string | null;
+  skills: string[];
+  certified: boolean;
+  favorites: number;
+}
+
+export interface MyProfilePatch {
+  firstname?: string;
+  lastname?: string;
+  name?: string;
+  birthdate?: string;
+  title?: string | null;
+  sector?: string | null;
+  location?: string | null;
+  skills?: string[];
+}
+
+export async function fetchMyProfile(): Promise<MyProfile | null> {
+  try {
+    return await apiFetch<MyProfile>("/api/me/profile");
+  } catch {
+    return null;
+  }
+}
+
+export function updateMyProfile(patch: MyProfilePatch): Promise<MyProfile> {
+  return apiFetch<MyProfile>("/api/me/profile", {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
