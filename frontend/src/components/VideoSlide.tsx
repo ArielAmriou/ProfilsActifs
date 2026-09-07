@@ -35,7 +35,7 @@ export function VideoSlide({ profile, isActive }: VideoSlideProps) {
 
   return (
     <article
-      className="feed-slide relative flex h-[100dvh] w-full items-start justify-center px-2 pt-1 pb-14 lg:pb-1"
+      className="feed-slide relative flex h-[100dvh] w-full items-start justify-center px-2 pt-1 pb-24 lg:pb-12"
       aria-label={`Profil de ${profile.name}`}
     >
       <div className="flex shrink-0 items-center gap-3 sm:gap-4">
