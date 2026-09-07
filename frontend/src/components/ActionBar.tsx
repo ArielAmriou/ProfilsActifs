@@ -16,13 +16,6 @@ interface ActionBarProps {
 
 type PendingAction = "like" | "favorite" | null;
 
-function formatCount(count: number): string {
-  if (count >= 1000) {
-    return `${(count / 1000).toFixed(1).replace(".0", "")}K`;
-  }
-  return String(count);
-}
-
 function HeartIcon({ filled }: { filled: boolean }) {
   return (
     <svg
@@ -69,7 +62,7 @@ function PersonIcon() {
 export function ActionBar({ profileId, initialLikes, profileName, isActive = false }: ActionBarProps) {
   const { isAuthenticated, role } = useAuth();
   const showProfileLink = !isAuthenticated || role === "recruiter";
-  const { liked, favorited, likeCount, showLikeCount, toggleLike, toggleFavorite } =
+  const { liked, favorited, toggleLike, toggleFavorite } =
     useProfileInteractions(profileId, initialLikes);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
@@ -101,15 +94,7 @@ export function ActionBar({ profileId, initialLikes, profileName, isActive = fal
           onClick={() => requireAuth("like", toggleLike)}
           aria-pressed={liked}
           tabIndex={isActive ? 0 : -1}
-          aria-label={
-            showLikeCount
-              ? liked
-                ? `Retirer le like (${likeCount} likes)`
-                : `Ajouter un like (${likeCount} likes)`
-              : liked
-                ? "Retirer le like"
-                : "Ajouter un like"
-          }
+          aria-label={liked ? "Retirer le like" : "Ajouter un like"}
           className="flex w-full flex-col items-center gap-1"
         >
           <span
@@ -117,11 +102,6 @@ export function ActionBar({ profileId, initialLikes, profileName, isActive = fal
           >
             <HeartIcon filled={liked} />
           </span>
-          {showLikeCount && (
-            <span className="font-title w-full text-center text-sm font-bold tabular-nums text-institutional">
-              {formatCount(likeCount)}
-            </span>
-          )}
         </button>
 
         <button

@@ -83,14 +83,6 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
                   </dt>
                   <dd className="mt-1 text-base">{profile.skills.join(", ")}</dd>
                 </div>
-                <div className="rounded-xl border-2 border-border bg-content-bg p-4">
-                  <dt className="font-title text-xs font-bold uppercase tracking-wide text-institutional/60">
-                    Likes
-                  </dt>
-                  <dd className="font-title mt-1 text-2xl font-bold text-action">
-                    {profile.likes}
-                  </dd>
-                </div>
               </dl>
             </ContentCard>
           </div>

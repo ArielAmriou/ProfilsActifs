@@ -4,8 +4,14 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+export type LoginPromptAction =
+  | "liker ce profil"
+  | "ajouter ce profil à vos favoris"
+  | "visionner cette vidéo"
+  | "changer de page";
+
 interface LoginPromptModalProps {
-  actionLabel: "liker ce profil" | "ajouter ce profil à vos favoris";
+  actionLabel: LoginPromptAction;
   onClose: () => void;
 }
 
@@ -27,8 +33,6 @@ export function LoginPromptModal({ actionLabel, onClose }: LoginPromptModalProps
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    // Pas de body.style.overflow : le feed gère déjà le lock via html.feed-lock
-
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };

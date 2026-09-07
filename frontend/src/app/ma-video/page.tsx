@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type ChangeEvent } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
+import { CandidateDisclaimerBanner } from "@/components/CandidateDisclaimerBanner";
 import { HeaderBar } from "@/components/HeaderBar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { RequireRole } from "@/components/RequireRole";
@@ -77,6 +78,7 @@ export default function MaVideoPage() {
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
         <RequireRole allowed={["jobseeker"]}>
           <HeaderBar />
+          <CandidateDisclaimerBanner />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
               <h1 className="font-title text-2xl font-bold text-institutional">Ma vidéo</h1>

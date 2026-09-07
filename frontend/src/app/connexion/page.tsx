@@ -81,6 +81,9 @@ function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [birthdate, setBirthdate] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole>("recruiter");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -102,12 +105,31 @@ function AuthForm() {
       return;
     }
 
+    if (mode === "register" && !firstname.trim()) {
+      setError("Le prénom est obligatoire.");
+      return;
+    }
+
+    if (mode === "register" && !lastname.trim()) {
+      setError("Le nom est obligatoire.");
+      return;
+    }
+
+    if (mode === "register" && !birthdate.trim()) {
+      setError("La date de naissance est obligatoire.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const nextRole =
         mode === "login"
           ? await login(email, password)
-          : await register(email, password, selectedRole);
+          : await register(email, password, selectedRole, {
+              firstname,
+              lastname,
+              birthdate,
+            });
 
       router.push(redirectParam ?? getHomeForRole(nextRole));
     } catch (err) {
@@ -175,7 +197,42 @@ function AuthForm() {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
             {mode === "register" && (
-              <RoleChoice value={selectedRole} onChange={setSelectedRole} />
+              <>
+                <RoleChoice value={selectedRole} onChange={setSelectedRole} />
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="firstname" className="font-title block text-sm font-bold">
+                      Prénom
+                    </label>
+                    <input
+                      id="firstname"
+                      name="firstname"
+                      type="text"
+                      autoComplete="given-name"
+                      required
+                      value={firstname}
+                      onChange={(event) => setFirstname(event.target.value)}
+                      className={inputClassName}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastname" className="font-title block text-sm font-bold">
+                      Nom
+                    </label>
+                    <input
+                      id="lastname"
+                      name="lastname"
+                      type="text"
+                      autoComplete="family-name"
+                      required
+                      value={lastname}
+                      onChange={(event) => setLastname(event.target.value)}
+                      className={inputClassName}
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
             <div>
@@ -226,6 +283,24 @@ function AuthForm() {
                   required
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
+                  className={inputClassName}
+                />
+              </div>
+            )}
+
+            {mode === "register" && (
+              <div>
+                <label htmlFor="birthdate" className="font-title block text-sm font-bold">
+                  Date de naissance
+                </label>
+                <input
+                  id="birthdate"
+                  name="birthdate"
+                  type="date"
+                  autoComplete="bday"
+                  required
+                  value={birthdate}
+                  onChange={(event) => setBirthdate(event.target.value)}
                   className={inputClassName}
                 />
               </div>
