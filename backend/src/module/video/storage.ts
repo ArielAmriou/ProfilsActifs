@@ -11,8 +11,6 @@ export type StorageState = "READY" | "PROCESSING" | "MISSING";
 
 export interface VideoFileMeta {
   mimeType: string;
-  size: number;
-  storedAt: string;
 }
 
 export function isStorageId(value: string): boolean {
@@ -54,11 +52,7 @@ export async function writeVideoFile(
   assertStorageId(id);
   await mkdir(videoConfig.storagePath, { recursive: true });
 
-  const meta: VideoFileMeta = {
-    mimeType,
-    size: data.byteLength,
-    storedAt: new Date().toISOString(),
-  };
+  const meta: VideoFileMeta = { mimeType };
 
   await writeFile(pendingPath(id), data);
   await writeFile(metaPath(id), JSON.stringify(meta));
@@ -71,6 +65,16 @@ export async function readVideoMeta(id: string): Promise<VideoFileMeta | null> {
   assertStorageId(id);
   try {
     return JSON.parse(await readFile(metaPath(id), "utf-8")) as VideoFileMeta;
+  } catch {
+    return null;
+  }
+}
+
+export async function videoFileSize(id: string): Promise<number | null> {
+  assertStorageId(id);
+  try {
+    const info = await stat(bytesPath(id));
+    return info.isFile() ? info.size : null;
   } catch {
     return null;
   }

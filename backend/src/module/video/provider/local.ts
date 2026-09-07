@@ -5,6 +5,7 @@ import {
   openVideoStream,
   readVideoMeta,
   removeVideoFiles,
+  videoFileSize,
   videoFileState,
   writeVideoFile,
 } from "../storage";
@@ -60,13 +61,13 @@ export const localVideoProvider: StreamingVideoProvider = {
   },
 
   async head(id: string): Promise<VideoPayloadHead> {
-    const meta = await readVideoMeta(id);
+    const [meta, size] = await Promise.all([readVideoMeta(id), videoFileSize(id)]);
 
-    if (!meta || (await videoFileState(id)) !== "READY") {
+    if (!meta || size === null) {
       throw new VideoNotFoundError(id);
     }
 
-    return { mimeType: meta.mimeType, size: meta.size };
+    return { mimeType: meta.mimeType, size };
   },
 
   async openStream(id: string, range?: ByteRange): Promise<VideoPlayback> {
