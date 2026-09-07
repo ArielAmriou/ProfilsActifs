@@ -28,3 +28,17 @@ export class UnknownVideoProviderError extends Error {
     this.name = "UnknownVideoProviderError";
   }
 }
+
+export class UnsupportedVideoTypeError extends Error {
+  constructor(mimeType: string) {
+    super(`Unsupported video type: ${mimeType}`);
+    this.name = "UnsupportedVideoTypeError";
+  }
+}
+
+export class VideoTooLargeError extends Error {
+  constructor(size: number, limit: number) {
+    super(`Video is ${size} bytes, limit is ${limit} bytes`);
+    this.name = "VideoTooLargeError";
+  }
+}
