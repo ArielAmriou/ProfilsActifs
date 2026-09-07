@@ -1,4 +1,3 @@
-import { EXAMPLE_VIDEO_URL } from "@/data/media";
 
 /** Aligné sur l'enum Prisma `UserRole` (hors `admin`, non exposé dans l'UI). */
 export type UserRole = "recruiter" | "jobseeker";
@@ -19,11 +18,12 @@ export interface JobseekerProfile {
   lastname: string;
   /** Username / display name (champ `name` better-auth / Prisma). */
   name: string;
+  /** Date de naissance au format YYYY-MM-DD (input type="date"). */
+  birthdate: string;
   title: string;
   sector: string;
   location: string;
   skills: string;
-  videoLink: string;
   likes: number;
   favorites: number;
   certified?: boolean;
@@ -38,16 +38,35 @@ export const DEFAULT_JOBSEEKER_PROFILE: JobseekerProfile = {
   firstname: "",
   lastname: "",
   name: "",
+  birthdate: "",
   title: "",
   sector: "",
   location: "",
   skills: "",
-  videoLink: EXAMPLE_VIDEO_URL,
   likes: 0,
   favorites: 0,
   certified: false,
 };
 
+/** Convertit une date API (ISO) vers YYYY-MM-DD pour les inputs date. */
+export function toDateInputValue(value: string | Date | null | undefined): string {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+}
+
 export function getHomeForRole(role: UserRole): string {
   return role === "recruiter" ? "/" : "/profil";
+}
+
+export function splitSkills(skills: string): string[] {
+  return skills
+    .split(",")
+    .map((skill) => skill.trim())
+    .filter(Boolean);
+}
+
+export function joinSkills(skills: string[]): string {
+  return skills.join(", ");
 }

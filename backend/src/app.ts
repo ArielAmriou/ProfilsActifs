@@ -6,6 +6,10 @@ import { serializerCompiler, validatorCompiler, jsonSchemaTransform } from "fast
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { healthRoutes } from "./module/health/health";
 import { authRoutes } from "./module/auth/routes";
+import { videoRoutes } from "./module/video/routes";
+import { profileRoutes } from "./module/profiles/routes";
+import { userRoutes } from "./module/user/routes";
+import { favoriteRoutes } from "./module/favorite/routes";
 import { auth } from "./middleware/better-auth";
 import { getCertificationData } from "./services/certification.service";
 import { certificationRoutes } from "./module/certification/certification.routes";
@@ -29,7 +33,7 @@ async function createApp() {
     origin: frontendOrigin,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-video-filename"],
   });
 
   const authOpenApi = await auth.api.generateOpenAPISchema();
@@ -45,6 +49,9 @@ async function createApp() {
       tags: [
         { name: "health", description: "API monitoring" },
         { name: "auth", description: "Authentication (better-auth)" },
+        { name: "video", description: "Video storage behind the provider abstraction" },
+        { name: "profiles", description: "Public jobseeker profiles" },
+        { name: "user", description: "User profiles" },
       ],
     },
     transform: jsonSchemaTransform,
@@ -104,6 +111,10 @@ async function createApp() {
 
   await fastify.register(healthRoutes);
   await fastify.register(authRoutes);
+  await fastify.register(videoRoutes);
+  await fastify.register(profileRoutes);
+  await fastify.register(userRoutes);
+  await fastify.register(favoriteRoutes);
   await fastify.register(certificationRoutes);
 
   return fastify;

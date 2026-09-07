@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { HeaderBar } from "@/components/HeaderBar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { BlockRole } from "@/components/RequireRole";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { getProfileById } from "@/data/profiles";
+import { VideoPlayer } from "@/components/video/VideoPlayer";
+import { fetchProfile, type Profile } from "@/lib/profiles-api";
 
 interface ProfileDetailPageProps {
   params: Promise<{ id: string }>;
@@ -17,7 +18,35 @@ interface ProfileDetailPageProps {
 
 export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   const { id } = use(params);
-  const profile = getProfileById(id);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    fetchProfile(id).then((fetched) => {
+      if (!active) return;
+      setProfile(fetched);
+      setLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
+        <BlockRole blocked="jobseeker">
+          <HeaderBar />
+          <p role="status" className="px-6 py-20 text-center text-sm text-institutional/70">
+            Chargement du profil…
+          </p>
+        </BlockRole>
+      </PageLayout>
+    );
+  }
 
   if (!profile) {
     notFound();
@@ -54,14 +83,11 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
               </div>
 
               <div className="mt-6 w-fit overflow-hidden rounded-2xl border-2 border-border bg-institutional">
-                <video
-                  src={profile.videoLink}
-                  controls
-                  playsInline
+                <VideoPlayer
+                  video={profile.video}
+                  label={`Vidéo de présentation de ${profile.name}`}
                   className="aspect-[9/16] h-auto w-48 object-cover sm:w-56"
-                >
-                  Votre navigateur ne supporte pas la lecture vidéo.
-                </video>
+                />
               </div>
 
               <dl className="mt-8 space-y-4 text-sm text-institutional">
@@ -82,14 +108,6 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
                     Compétences
                   </dt>
                   <dd className="mt-1 text-base">{profile.skills.join(", ")}</dd>
-                </div>
-                <div className="rounded-xl border-2 border-border bg-content-bg p-4">
-                  <dt className="font-title text-xs font-bold uppercase tracking-wide text-institutional/60">
-                    Likes
-                  </dt>
-                  <dd className="font-title mt-1 text-2xl font-bold text-action">
-                    {profile.likes}
-                  </dd>
                 </div>
               </dl>
             </ContentCard>

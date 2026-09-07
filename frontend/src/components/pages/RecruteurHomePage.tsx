@@ -1,20 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
-import { Feed } from "@/components/Feed";
 import { HeaderBar } from "@/components/HeaderBar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { BlockRole } from "@/components/RequireRole";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { ProfileCatalog } from "@/components/ProfileCatalog";
 
 export function RecruteurHomePage() {
-  // Empêche le scroll de page uniquement sur le feed (pas sur les autres pages)
-  useEffect(() => {
-    document.documentElement.classList.add("feed-lock");
-    return () => document.documentElement.classList.remove("feed-lock");
-  }, []);
-
   return (
     <>
       <PageLayout
@@ -23,9 +16,9 @@ export function RecruteurHomePage() {
         mainClassName="relative min-h-[100dvh]"
       >
         <BlockRole blocked="jobseeker">
-          <h1 className="sr-only">Profils mis en avant — ProfilsActifs</h1>
+          <h1 className="sr-only">Catalogue de profils — ProfilsActifs</h1>
           <HeaderBar />
-          <Feed />
+          <ProfileCatalog />
         </BlockRole>
       </PageLayout>
       <MobileBottomNav />

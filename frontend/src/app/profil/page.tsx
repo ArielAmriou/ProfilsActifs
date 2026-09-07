@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
+import { CandidateDisclaimerBanner } from "@/components/CandidateDisclaimerBanner";
 import { HeaderBar } from "@/components/HeaderBar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { RequireRole } from "@/components/RequireRole";
@@ -17,21 +18,41 @@ export default function ProfilPage() {
   const { jobseekerProfile, updateJobseekerProfile, email } = useAuth();
   const [form, setForm] = useState(jobseekerProfile);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   useEffect(() => {
     setForm(jobseekerProfile);
   }, [jobseekerProfile]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    updateJobseekerProfile({
-      ...form,
-      firstname: form.firstname.trim(),
-      lastname: form.lastname.trim(),
-      name: form.name.trim(),
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    if (!form.birthdate.trim()) {
+      return;
+    }
+
+    setPending(true);
+    setError(null);
+
+    try {
+      await updateJobseekerProfile({
+        ...form,
+        firstname: form.firstname.trim(),
+        lastname: form.lastname.trim(),
+        name: form.name.trim(),
+        birthdate: form.birthdate.trim(),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "L'enregistrement a échoué. Réessayez dans un instant.",
+      );
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
@@ -39,6 +60,7 @@ export default function ProfilPage() {
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
         <RequireRole allowed={["jobseeker"]}>
           <HeaderBar />
+          <CandidateDisclaimerBanner />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
               <div className="flex items-center gap-3">
@@ -51,14 +73,7 @@ export default function ProfilPage() {
               </p>
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border-2 border-border bg-content-bg p-4">
-                  <p className="font-title text-xs font-bold uppercase tracking-wide text-institutional/60">
-                    Likes reçus
-                  </p>
-                  <p className="font-title mt-2 text-3xl font-bold text-action">
-                    {jobseekerProfile.likes}
-                  </p>
-                </div>
+                {/* Compteur « Likes reçus » retiré (instruction cabinet) — like conservé sans affichage public */}
                 <div className="rounded-xl border-2 border-border bg-content-bg p-4">
                   <p className="font-title text-xs font-bold uppercase tracking-wide text-institutional/60">
                     Mises en favori
@@ -135,6 +150,24 @@ export default function ProfilPage() {
                 </div>
 
                 <div>
+                  <label htmlFor="birthdate" className="font-title block text-sm font-bold">
+                    Date de naissance
+                  </label>
+                  <input
+                    id="birthdate"
+                    name="birthdate"
+                    type="date"
+                    autoComplete="bday"
+                    required
+                    value={form.birthdate}
+                    onChange={(event) =>
+                      setForm({ ...form, birthdate: event.target.value })
+                    }
+                    className={inputClassName}
+                  />
+                </div>
+
+                <div>
                   <label htmlFor="title" className="font-title block text-sm font-bold">
                     Intitulé du poste recherché
                   </label>
@@ -194,11 +227,18 @@ export default function ProfilPage() {
                   </p>
                 )}
 
+                {error && (
+                  <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">
+                    {error}
+                  </p>
+                )}
+
                 <button
                   type="submit"
-                  className="font-title rounded-lg bg-action px-4 py-3 text-sm font-bold text-white transition hover:bg-action-hover"
+                  disabled={pending}
+                  className="font-title rounded-lg bg-action px-4 py-3 text-sm font-bold text-white transition hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Enregistrer le profil
+                  {pending ? "Enregistrement…" : "Enregistrer le profil"}
                 </button>
               </form>
             </ContentCard>

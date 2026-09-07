@@ -1,6 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap");
 @import "tailwindcss";
+@import "@heroui/react/styles";
 
+/*
+  Ancienne police de titre (Marianne / DSFR) — conservée pour trace :
 @font-face {
   font-family: Marianne;
   src: url("https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.13.1/dist/font/marianne/Marianne-Regular.woff2")
@@ -18,9 +21,11 @@
   font-style: normal;
   font-display: swap;
 }
+*/
 
 @theme {
-  --color-institutional: #1b3a6b;
+  /* Ancienne primary (bleu institutionnel) : #1b3a6b — conservée pour trace */
+  --color-institutional: #1a4540;
   --color-action: #c4521a;
   --color-action-hover: #a34416;
   --color-surface: #ffffff;
@@ -29,17 +34,20 @@
   --color-border: #e3e3fd;
   --color-background-alt: #f5f5fe;
 
-  --font-title: Marianne, "Segoe UI", system-ui, sans-serif;
-  --font-body: Spectral, Georgia, "Times New Roman", serif;
+  /* Ancienne police titre : Marianne, "Segoe UI", system-ui, sans-serif */
+  --font-title: Outfit, "Segoe UI", system-ui, sans-serif;
+  /* Ancienne police corps : Spectral, Georgia, "Times New Roman", serif */
+  --font-body: "Source Serif 4", Georgia, "Times New Roman", serif;
 }
 
 /*
   Palette unifiée — contrastes mesurés (RGAA AA)
-  - #1B3A6B sur #FFFFFF : 10,07:1 (primaire)
-  - #FFFFFF sur #1B3A6B : 10,07:1
-  - #C4521A sur #FFFFFF : 5,74:1 (secondaire)
+  - #1A4540 sur #FFFFFF : ~9,8:1 (primaire — teal profond, assorti à l'orange action)
+  - #FFFFFF sur #1A4540 : ~9,8:1
+  - Ancienne primary : #1B3A6B sur #FFFFFF : 10,07:1
+  - #C4521A sur #FFFFFF : 5,74:1 (secondaire / action)
   - #FFFFFF sur #C4521A : 4,63:1
-  - #E3E3FD sur #FFFFFF : 1,15:1 (bordures DSFR — border-open-blue-france)
+  - #E3E3FD sur #FFFFFF : 1,15:1 (bordures)
   - #FAF8F4 : fond crème des zones de contenu (content-bg)
 */
 
@@ -51,18 +59,6 @@ body {
   font-family: var(--font-body);
   color: var(--color-institutional);
   background: var(--color-surface);
-}
-
-/* Verrouille le scroll page uniquement sur le catalogue (feed) */
-html.feed-lock,
-html.feed-lock body {
-  overflow: hidden;
-  height: 100%;
-  scrollbar-width: none;
-}
-
-html.feed-lock::-webkit-scrollbar {
-  display: none;
 }
 
 h1,
@@ -92,32 +88,4 @@ h3,
 
 .skip-link:focus {
   top: 1rem;
-}
-
-.loop-link {
-  position: absolute;
-  left: -100vw;
-  display: block;
-  padding: 0.75rem 1rem;
-  background: var(--color-institutional);
-  color: white;
-  font-family: var(--font-title);
-  font-size: 0.875rem;
-  font-weight: 700;
-  text-decoration: none;
-  border: none;
-  border-radius: 0.375rem;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.loop-link:focus {
-  position: static;
-  left: auto;
-  margin: 1rem auto;
-  width: fit-content;
-}
-
-.feed-slide {
-  height: 100dvh;
 }

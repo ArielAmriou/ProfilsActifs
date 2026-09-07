@@ -28,6 +28,8 @@ services:
       - backendnet
     env_file:
       - ./backend/.env
+    volumes:
+      - ./backend/var/videos:/usr/src/app/var/videos
     ports:
       - "8081:8081"
   

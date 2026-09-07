@@ -15,13 +15,17 @@ model Users {
   emailVerified Boolean    @default(false) @map("email_verified")
   image         String?    @db.VarChar(255)
   role          UserRole
+  title         String?    @db.VarChar(255)
+  sector        String?    @db.VarChar(255)
+  location      String?    @db.VarChar(255)
+  skills        String[]   @default([])
+  certified     Boolean    @default(false)
   createdAt     DateTime   @map("created_at") @db.Timestamptz(3)
   updatedAt     DateTime   @map("updated_at") @db.Timestamptz(3)
   birthdate     DateTime   @db.Timestamp(0)
 
   answers       Answers[]
   favorites     Favorites[]
-  likes         Likes[]
   surveys       Surveys[]
   videos        Videos?
   sessions      Session[]
@@ -31,60 +35,41 @@ model Users {
 }
 
 model Surveys {
-  id          String   @id @default(uuid()) @db.Uuid
-  createdBy   String   @map("created_by") @db.Uuid
-  date        DateTime @db.Timestamp(0)
-  title       String   @db.VarChar(255)
-  description String?  @db.VarChar(255)
-  version     String   @default("1.0") @db.VarChar(50)
-  questions   Questions[]
-  users       Users    @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+  id                String    @id @default(uuid()) @db.Uuid
+  createdBy         String    @map("created_by") @db.Uuid
+  date              DateTime  @db.Timestamp(0)
+  questionnaireFile String    @map("questionnaire_file") @db.VarChar(255)
+  answers           Answers[]
+  users             Users     @relation(fields: [createdBy], references: [id], onDelete: Restrict)
 
   @@map("surveys")
 }
 
-model Questions {
-  id       String   @id @default(uuid()) @db.Uuid
-  surveyId String   @map("survey_id") @db.Uuid
-  label    String   @db.VarChar(255)
-  answers  Answers[]
-  options  Options[]
-  survey   Surveys  @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-
-  @@map("questions")
-}
-
-model Options {
-  id         String    @id @default(uuid()) @db.Uuid
-  questionId String    @map("question_id") @db.Uuid
-  option     String    @db.VarChar(255)
-  answers    Answers[]
-  question   Questions @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  @@map("options")
-}
-
 model Answers {
-  id         String    @id @default(uuid()) @db.Uuid
-  questionId String    @map("question_id") @db.Uuid
-  userId     String    @map("user_id") @db.Uuid
-  optionId   String    @map("option_id") @db.Uuid
-  option     Options   @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  question   Questions @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user       Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid()) @db.Uuid
+  surveyId   String   @map("survey_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  value      String   @db.VarChar(255)
+  survey     Surveys  @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  user       Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([questionId, userId])
+  @@unique([surveyId, userId])
   @@map("answers")
 }
 
 model Videos {
-  id        String      @id @default(uuid()) @db.Uuid
-  userId    String      @unique @map("user_id") @db.Uuid
-  videoLink String      @map("video_link") @db.VarChar(255)
-  favorites Favorites[]
-  likes     Likes[]
-  user      Users       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String      @unique @map("user_id") @db.Uuid
+  providerName String      @map("provider_name") @db.VarChar(32)
+  providerId   String      @map("provider_id") @db.VarChar(255)
+  status       VideoStatus @default(PROCESSING)
+  size         Int?
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  favorites    Favorites[]
+  user         Users       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([providerName, providerId])
   @@map("videos")
 }
 
@@ -96,16 +81,6 @@ model Favorites {
 
   @@id([videoId, userId])
   @@map("favorites")
-}
-
-model Likes {
-  videoId String @map("video_id") @db.Uuid
-  userId  String @map("user_id") @db.Uuid
-  user    Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  video   Videos @relation(fields: [videoId], references: [id], onDelete: Cascade)
-
-  @@id([videoId, userId])
-  @@map("likes")
 }
 
 model Session {
@@ -154,6 +129,14 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum VideoStatus {
+  PROCESSING
+  READY
+  ERROR
+
+  @@map("video_status")
 }
 
 enum UserRole {
