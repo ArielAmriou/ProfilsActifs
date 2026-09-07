@@ -1,10 +1,11 @@
 {
     "version": "1.0",
+    "title": "Test",
+    "description": "Desciption of the survey",
     "questions": [
         {
             "id": "1",
             "question": "Quel est votre niveau d'expérience en développement web ?",
-            "type": "single_choice",
             "options": [
                 "Moins d'un an",
                 "Entre 1 et 3 ans",
@@ -15,7 +16,6 @@
         {
             "id": "2",
             "question": "Lol",
-            "type": "single_choice",
             "options": [
                 "Moins d'un an",
                 "Entre 1 et 3 ans",
@@ -26,7 +26,6 @@
         {
             "id": "3",
             "question": "Lol2",
-            "type": "single_choice",
             "options": [
                 "Moins d'un an",
                 "Entre 1 et 3 ans",
@@ -37,7 +36,6 @@
         {
             "id": "4",
             "question": "Lol3",
-            "type": "single_choice",
             "options": [
                 "Moins d'un an",
                 "Entre 1 et 3 ans",
