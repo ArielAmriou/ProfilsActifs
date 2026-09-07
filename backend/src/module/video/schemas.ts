@@ -4,6 +4,7 @@ export const videoDescriptorSchema = z.object({
   status: z.enum(["PROCESSING", "READY", "ERROR"]),
   providerName: z.string(),
   playbackUrl: z.string().nullable(),
+  size: z.number().nullable(),
 });
 
 export const videoErrorSchema = z.object({ error: z.string() });

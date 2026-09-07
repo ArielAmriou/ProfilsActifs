@@ -35,7 +35,12 @@ async function migrateRow(id: string, legacyLink: string): Promise<keyof Outcome
 
   await prisma.videos.update({
     where: { id },
-    data: { providerName: LOCAL_PROVIDER_NAME, providerId, status: "READY" },
+    data: {
+      providerName: LOCAL_PROVIDER_NAME,
+      providerId,
+      status: "READY",
+      size: data.byteLength,
+    },
   });
 
   await removeLegacyFile(legacyPath);

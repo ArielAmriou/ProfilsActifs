@@ -6,18 +6,21 @@ export interface VideoDescriptor {
   status: VideoStatus;
   providerName: string;
   playbackUrl: string | null;
+  size: number | null;
 }
 
 export const NO_VIDEO: VideoDescriptor = {
   status: "ERROR",
   providerName: "none",
   playbackUrl: null,
+  size: null,
 };
 
 export const UNREACHABLE_VIDEO: VideoDescriptor = {
   status: "ERROR",
   providerName: "unreachable",
   playbackUrl: null,
+  size: null,
 };
 
 export function isPlayable(video: VideoDescriptor): boolean {

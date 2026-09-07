@@ -16,16 +16,18 @@ export interface VideoDescriptor {
   status: VideoStatus;
   providerName: string;
   playbackUrl: string | null;
+  size: number | null;
 }
 
 interface VideoRecord {
   providerName: string;
   providerId: string;
   status: VideoStatus;
+  size: number | null;
 }
 
 function degraded(record: VideoRecord, status: VideoStatus): VideoDescriptor {
-  return { status, providerName: record.providerName, playbackUrl: null };
+  return { status, providerName: record.providerName, playbackUrl: null, size: record.size };
 }
 
 export async function describeVideo(record: VideoRecord): Promise<VideoDescriptor> {
@@ -46,6 +48,7 @@ export async function describeVideo(record: VideoRecord): Promise<VideoDescripto
       status,
       providerName: record.providerName,
       playbackUrl: await provider.playbackUrl(record.providerId),
+      size: record.size,
     };
   } catch {
     return degraded(record, "ERROR");
@@ -64,11 +67,12 @@ export async function replaceUserVideo(
   const provider = getVideoProvider();
   const providerId = await provider.store(upload);
   const previous = await prisma.videos.findUnique({ where: { userId } });
+  const size = upload.data.byteLength;
 
   const record = await prisma.videos.upsert({
     where: { userId },
-    create: { userId, providerName: provider.name, providerId, status: "READY" },
-    update: { providerName: provider.name, providerId, status: "READY" },
+    create: { userId, providerName: provider.name, providerId, status: "READY", size },
+    update: { providerName: provider.name, providerId, status: "READY", size },
   });
 
   if (previous) {

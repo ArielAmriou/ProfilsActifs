@@ -32,7 +32,7 @@ const ACCEPTED_UPLOAD_TYPES = [
   "video/ogg",
 ];
 
-const NO_VIDEO = { status: "ERROR", providerName: "none", playbackUrl: null } as const;
+const NO_VIDEO = { status: "ERROR", providerName: "none", playbackUrl: null, size: null } as const;
 
 function uploadFilename(request: FastifyRequest): string {
   const header = request.headers["x-video-filename"];

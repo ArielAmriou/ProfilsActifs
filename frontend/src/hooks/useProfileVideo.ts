@@ -7,6 +7,7 @@ const RESOLVING: VideoDescriptor = {
   status: "PROCESSING",
   providerName: "pending",
   playbackUrl: null,
+  size: null,
 };
 
 export function useProfileVideo(ownerId?: string): VideoDescriptor {
