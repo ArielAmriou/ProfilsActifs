@@ -68,7 +68,7 @@ function PersonIcon() {
 
 export function ActionBar({ profileId, initialLikes, profileName, isActive = false }: ActionBarProps) {
   const { isAuthenticated, role } = useAuth();
-  const showProfileLink = !isAuthenticated || role === "recruteur";
+  const showProfileLink = !isAuthenticated || role === "recruiter";
   const { liked, favorited, likeCount, showLikeCount, toggleLike, toggleFavorite } =
     useProfileInteractions(profileId, initialLikes);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);

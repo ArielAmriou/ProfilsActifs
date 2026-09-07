@@ -7,9 +7,17 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  // Requis pour les appels navigateur depuis le front (CORS / cookies cross-origin).
+  trustedOrigins: [process.env.FRONTEND_URL ?? "http://localhost:3000"],
   advanced: {
     database: {
       generateId: "uuid",
+    },
+    defaultCookieAttributes: {
+      // localhost:3000 ↔ localhost:8081 = sites différents : cookies session cross-port.
+      sameSite: "none",
+      secure: true,
+      partitioned: true,
     },
   },
   emailAndPassword: {
@@ -19,10 +27,10 @@ export const auth = betterAuth({
   user: {
     modelName: "users",
     additionalFields: {
-      firstname: { type: "string", required: true },
-      lastname: { type: "string", required: true },
-      role: { type: "string", required: true },
-      birthdate: { type: "date", required: true },
+      firstname: { type: "string", required: true, returned: true },
+      lastname: { type: "string", required: true, returned: true },
+      role: { type: "string", required: true, returned: true },
+      birthdate: { type: "date", required: true, returned: true },
     },
   },
 });

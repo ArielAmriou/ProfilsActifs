@@ -12,7 +12,9 @@ export function HeaderBar() {
         {isAuthenticated ? (
           <button
             type="button"
-            onClick={logout}
+            onClick={() => {
+              void logout();
+            }}
             className="font-title rounded-full border-2 border-border bg-surface px-5 py-2 text-sm font-bold text-institutional transition hover:border-institutional"
           >
             Se déconnecter

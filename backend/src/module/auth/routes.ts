@@ -21,7 +21,7 @@ const userSchema = z.object({
 
 export async function authRoutes(fastify: FastifyInstance) {
   fastify.route({
-    method: ["GET", "POST"],
+    method: ["GET", "POST", "OPTIONS"],
     url: "/api/auth/*",
     schema: {
       tags: ["auth"],

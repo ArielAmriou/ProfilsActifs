@@ -9,150 +9,192 @@ import {
   useState,
 } from "react";
 import {
-  AUTH_KEY,
-  DEFAULT_DEMANDEUR_PROFILE,
-  DEMANDEUR_PROFILE_KEY,
-  EMAIL_KEY,
-  ROLE_KEY,
-  type DemandeurProfile,
+  fetchCurrentUser,
+  signInWithEmail,
+  signOut,
+  signUpWithEmail,
+} from "@/lib/auth-api";
+import {
+  DEFAULT_JOBSEEKER_PROFILE,
+  JOBSEEKER_PROFILE_KEY,
+  type JobseekerProfile,
   type UserRole,
 } from "@/types/auth";
 
 interface AuthContextValue {
   isAuthenticated: boolean;
+  isLoading: boolean;
   role: UserRole | null;
   email: string | null;
-  demandeurProfile: DemandeurProfile;
-  login: (email: string, password: string) => boolean;
-  register: (email: string, password: string, role: UserRole) => boolean;
-  logout: () => void;
-  updateDemandeurProfile: (patch: Partial<DemandeurProfile>) => void;
+  userId: string | null;
+  jobseekerProfile: JobseekerProfile;
+  login: (email: string, password: string) => Promise<UserRole>;
+  register: (email: string, password: string, role: UserRole) => Promise<UserRole>;
+  logout: () => Promise<void>;
+  updateJobseekerProfile: (patch: Partial<JobseekerProfile>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function readDemandeurProfile(): DemandeurProfile {
-  if (typeof window === "undefined") {
-    return DEFAULT_DEMANDEUR_PROFILE;
+function profileStorageKey(userId: string) {
+  return `${JOBSEEKER_PROFILE_KEY}:${userId}`;
+}
+
+function readJobseekerProfile(userId: string | null): JobseekerProfile {
+  if (typeof window === "undefined" || !userId) {
+    return DEFAULT_JOBSEEKER_PROFILE;
   }
   try {
-    const stored = localStorage.getItem(DEMANDEUR_PROFILE_KEY);
+    const stored = localStorage.getItem(profileStorageKey(userId));
     if (!stored) {
-      return DEFAULT_DEMANDEUR_PROFILE;
+      return DEFAULT_JOBSEEKER_PROFILE;
     }
-    return { ...DEFAULT_DEMANDEUR_PROFILE, ...JSON.parse(stored) } as DemandeurProfile;
+    return { ...DEFAULT_JOBSEEKER_PROFILE, ...JSON.parse(stored) } as JobseekerProfile;
   } catch {
-    return DEFAULT_DEMANDEUR_PROFILE;
+    return DEFAULT_JOBSEEKER_PROFILE;
   }
 }
 
-function writeDemandeurProfile(profile: DemandeurProfile) {
-  localStorage.setItem(DEMANDEUR_PROFILE_KEY, JSON.stringify(profile));
+function writeJobseekerProfile(userId: string, profile: JobseekerProfile) {
+  localStorage.setItem(profileStorageKey(userId), JSON.stringify(profile));
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [role, setRole] = useState<UserRole | null>(null);
   const [email, setEmail] = useState<string | null>(null);
-  const [demandeurProfile, setDemandeurProfile] = useState<DemandeurProfile>(
-    DEFAULT_DEMANDEUR_PROFILE,
+  const [userId, setUserId] = useState<string | null>(null);
+  const [jobseekerProfile, setJobseekerProfile] = useState<JobseekerProfile>(
+    DEFAULT_JOBSEEKER_PROFILE,
   );
-  const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    setIsAuthenticated(localStorage.getItem(AUTH_KEY) === "true");
-    const storedRole = localStorage.getItem(ROLE_KEY);
-    setRole(storedRole === "recruteur" || storedRole === "demandeur" ? storedRole : null);
-    setEmail(localStorage.getItem(EMAIL_KEY));
-    setDemandeurProfile(readDemandeurProfile());
-    setHydrated(true);
-  }, []);
-
-  const persistSession = useCallback(
-    (nextEmail: string, nextRole: UserRole) => {
-      localStorage.setItem(AUTH_KEY, "true");
-      localStorage.setItem(ROLE_KEY, nextRole);
-      localStorage.setItem(EMAIL_KEY, nextEmail.trim());
+  const applyUser = useCallback(
+    (user: {
+      id: string;
+      email: string;
+      role: UserRole;
+      firstname?: string;
+      lastname?: string;
+      name?: string;
+    }) => {
       setIsAuthenticated(true);
-      setRole(nextRole);
-      setEmail(nextEmail.trim());
+      setRole(user.role);
+      setEmail(user.email);
+      setUserId(user.id);
+
+      if (user.role === "jobseeker") {
+        const stored = readJobseekerProfile(user.id);
+        const seeded: JobseekerProfile = {
+          ...DEFAULT_JOBSEEKER_PROFILE,
+          ...stored,
+          firstname: stored.firstname || user.firstname || "",
+          lastname: stored.lastname || user.lastname || "",
+          name: stored.name || user.name || "",
+        };
+        writeJobseekerProfile(user.id, seeded);
+        setJobseekerProfile(seeded);
+      } else {
+        setJobseekerProfile(DEFAULT_JOBSEEKER_PROFILE);
+      }
     },
     [],
   );
 
-  const login = useCallback(
-    (nextEmail: string, password: string) => {
-      if (!nextEmail.trim() || !password.trim()) {
-        return false;
-      }
-
-      const storedRole = localStorage.getItem(ROLE_KEY);
-      const nextRole: UserRole =
-        storedRole === "recruteur" || storedRole === "demandeur" ? storedRole : "recruteur";
-
-      persistSession(nextEmail, nextRole);
-      return true;
-    },
-    [persistSession],
-  );
-
-  const register = useCallback(
-    (nextEmail: string, password: string, nextRole: UserRole) => {
-      if (!nextEmail.trim() || !password.trim()) {
-        return false;
-      }
-
-      persistSession(nextEmail, nextRole);
-
-      if (nextRole === "demandeur") {
-        const profile = { ...DEFAULT_DEMANDEUR_PROFILE };
-        writeDemandeurProfile(profile);
-        setDemandeurProfile(profile);
-      }
-
-      return true;
-    },
-    [persistSession],
-  );
-
-  const logout = useCallback(() => {
-    localStorage.removeItem(AUTH_KEY);
-    localStorage.removeItem(ROLE_KEY);
-    localStorage.removeItem(EMAIL_KEY);
+  const clearSession = useCallback(() => {
     setIsAuthenticated(false);
     setRole(null);
     setEmail(null);
+    setUserId(null);
+    setJobseekerProfile(DEFAULT_JOBSEEKER_PROFILE);
   }, []);
 
-  const updateDemandeurProfile = useCallback((patch: Partial<DemandeurProfile>) => {
-    setDemandeurProfile((current) => {
-      const next = { ...current, ...patch };
-      writeDemandeurProfile(next);
-      return next;
-    });
-  }, []);
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      setIsLoading(true);
+      const user = await fetchCurrentUser();
+      if (cancelled) return;
+      if (user) {
+        applyUser(user);
+      } else {
+        clearSession();
+      }
+      setIsLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applyUser, clearSession]);
+
+  const login = useCallback(
+    async (nextEmail: string, password: string) => {
+      if (!nextEmail.trim() || !password.trim()) {
+        throw new Error("Veuillez renseigner votre adresse e-mail et votre mot de passe.");
+      }
+      const user = await signInWithEmail(nextEmail.trim(), password);
+      applyUser(user);
+      return user.role;
+    },
+    [applyUser],
+  );
+
+  const register = useCallback(
+    async (nextEmail: string, password: string, nextRole: UserRole) => {
+      if (!nextEmail.trim() || !password.trim()) {
+        throw new Error("Veuillez renseigner votre adresse e-mail et votre mot de passe.");
+      }
+      const user = await signUpWithEmail(nextEmail.trim(), password, nextRole);
+      applyUser(user);
+      return user.role;
+    },
+    [applyUser],
+  );
+
+  const logout = useCallback(async () => {
+    await signOut();
+    clearSession();
+  }, [clearSession]);
+
+  const updateJobseekerProfile = useCallback(
+    (patch: Partial<JobseekerProfile>) => {
+      setJobseekerProfile((current) => {
+        const next = { ...current, ...patch };
+        if (userId) {
+          writeJobseekerProfile(userId, next);
+        }
+        return next;
+      });
+    },
+    [userId],
+  );
 
   const value = useMemo(
     () => ({
-      isAuthenticated: hydrated && isAuthenticated,
-      role: hydrated ? role : null,
-      email: hydrated ? email : null,
-      demandeurProfile: hydrated ? demandeurProfile : DEFAULT_DEMANDEUR_PROFILE,
+      isAuthenticated: !isLoading && isAuthenticated,
+      isLoading,
+      role: isLoading ? null : role,
+      email: isLoading ? null : email,
+      userId: isLoading ? null : userId,
+      jobseekerProfile: isLoading ? DEFAULT_JOBSEEKER_PROFILE : jobseekerProfile,
       login,
       register,
       logout,
-      updateDemandeurProfile,
+      updateJobseekerProfile,
     }),
     [
-      hydrated,
+      isLoading,
       isAuthenticated,
       role,
       email,
-      demandeurProfile,
+      userId,
+      jobseekerProfile,
       login,
       register,
       logout,
-      updateDemandeurProfile,
+      updateJobseekerProfile,
     ],
   );
 

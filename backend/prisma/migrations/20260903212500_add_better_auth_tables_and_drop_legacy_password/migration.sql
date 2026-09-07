@@ -19,9 +19,6 @@ ALTER TABLE "users" ALTER COLUMN "updated_at" SET NOT NULL;
 -- AlterTable: created_at moves from timestamp(0) to timestamptz(3)
 ALTER TABLE "users" ALTER COLUMN "created_at" TYPE TIMESTAMPTZ(3) USING "created_at" AT TIME ZONE 'UTC';
 
--- CreateIndex
-CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
-
 -- CreateTable
 CREATE TABLE "session" (
     "id" VARCHAR(255) NOT NULL,

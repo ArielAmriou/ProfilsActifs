@@ -14,11 +14,11 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Profils mis en avant", href: "/", roles: ["recruteur"] },
-  { label: "Mes favoris", href: "/favoris", roles: ["recruteur"] },
-  { label: "Profil", href: "/profil", roles: ["demandeur"] },
-  { label: "Ma vidéo", href: "/ma-video", roles: ["demandeur"] },
-  { label: "Questionnaire", href: "/questionnaire", roles: ["demandeur"] },
+  { label: "Profils mis en avant", href: "/", roles: ["recruiter"] },
+  { label: "Mes favoris", href: "/favoris", roles: ["recruiter"] },
+  { label: "Profil", href: "/profil", roles: ["jobseeker"] },
+  { label: "Ma vidéo", href: "/ma-video", roles: ["jobseeker"] },
+  { label: "Questionnaire", href: "/questionnaire", roles: ["jobseeker"] },
 ];
 
 function SidebarBrandAndQuote() {
@@ -72,7 +72,7 @@ export function AppSidebar() {
 
       {isAuthenticated && (
         <p className="mt-auto pt-8 text-sm leading-relaxed text-institutional/70">
-          {role === "demandeur"
+          {role === "jobseeker"
             ? "Gérez votre profil vidéo et complétez votre questionnaire."
             : "Valorisez vos compétences professionnelles par la vidéo."}
         </p>

@@ -7,7 +7,7 @@ import { ConnexionSidebar } from "@/components/AppSidebar";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuth } from "@/context/AuthContext";
-import { getHomeForRole, ROLE_KEY, type UserRole } from "@/types/auth";
+import { getHomeForRole, type UserRole } from "@/types/auth";
 
 type AuthMode = "login" | "register";
 
@@ -23,12 +23,12 @@ function RoleChoice({
 }) {
   const options: { role: UserRole; title: string; description: string }[] = [
     {
-      role: "recruteur",
+      role: "recruiter",
       title: "Recruteur",
       description: "Parcourez les profils, likez et enregistrez vos favoris.",
     },
     {
-      role: "demandeur",
+      role: "jobseeker",
       title: "Demandeur d'emploi",
       description: "Gérez votre profil, votre vidéo et votre questionnaire.",
     },
@@ -76,23 +76,24 @@ function RoleChoice({
 function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, register, isAuthenticated, role } = useAuth();
+  const { login, register, isAuthenticated, role, isLoading } = useAuth();
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [selectedRole, setSelectedRole] = useState<UserRole>("recruteur");
+  const [selectedRole, setSelectedRole] = useState<UserRole>("recruiter");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const redirectParam = searchParams.get("redirect");
 
   useEffect(() => {
-    if (isAuthenticated && role) {
+    if (!isLoading && isAuthenticated && role) {
       router.replace(redirectParam ?? getHomeForRole(role));
     }
-  }, [isAuthenticated, redirectParam, role, router]);
+  }, [isAuthenticated, isLoading, redirectParam, role, router]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
@@ -101,26 +102,23 @@ function AuthForm() {
       return;
     }
 
-    const success =
-      mode === "login"
-        ? login(email, password)
-        : register(email, password, selectedRole);
+    setSubmitting(true);
+    try {
+      const nextRole =
+        mode === "login"
+          ? await login(email, password)
+          : await register(email, password, selectedRole);
 
-    if (!success) {
-      setError("Veuillez renseigner votre adresse e-mail et votre mot de passe.");
-      return;
+      router.push(redirectParam ?? getHomeForRole(nextRole));
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Impossible de contacter le serveur d'authentification.",
+      );
+    } finally {
+      setSubmitting(false);
     }
-
-    const nextRole: UserRole =
-      mode === "register"
-        ? selectedRole
-        : localStorage.getItem(ROLE_KEY) === "demandeur"
-          ? "demandeur"
-          : "recruteur";
-
-    // Recruteur -> / (catalogue) ; demandeur -> /profil
-    // Plus de redirection forcée vers /questionnaire
-    router.push(redirectParam ?? getHomeForRole(nextRole));
   };
 
   return (
@@ -241,9 +239,14 @@ function AuthForm() {
 
             <button
               type="submit"
-              className="font-title w-full rounded-lg bg-action px-4 py-3 text-sm font-bold text-white transition hover:bg-action-hover"
+              disabled={submitting || isLoading}
+              className="font-title w-full rounded-lg bg-action px-4 py-3 text-sm font-bold text-white transition hover:bg-action-hover disabled:opacity-60"
             >
-              {mode === "login" ? "Se connecter" : "Créer mon compte"}
+              {submitting
+                ? "Patientez…"
+                : mode === "login"
+                  ? "Se connecter"
+                  : "Créer mon compte"}
             </button>
           </form>
 

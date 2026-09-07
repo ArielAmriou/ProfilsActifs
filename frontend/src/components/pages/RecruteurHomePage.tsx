@@ -22,7 +22,7 @@ export function RecruteurHomePage() {
         sidebar={<AppSidebar />}
         mainClassName="relative min-h-[100dvh]"
       >
-        <BlockRole blocked="demandeur">
+        <BlockRole blocked="jobseeker">
           <h1 className="sr-only">Profils mis en avant — ProfilsActifs</h1>
           <HeaderBar />
           <Feed />
