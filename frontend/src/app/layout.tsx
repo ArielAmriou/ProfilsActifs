@@ -4,8 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "ProfilsActifs",
-  description:                                                                                                                  
-    "ProfilsActifs met en avant les compétences des demandeurs d'emploi par la vidéo.",
+  description: "ProfilsActifs met en avant les compétences des demandeurs d'emploi par la vidéo.",
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
