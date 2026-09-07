@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Profile } from "@/data/profiles";
+import { useProfileVideo } from "@/hooks/useProfileVideo";
+import { isPlayable } from "@/lib/videos";
+import { VideoUnavailable } from "./video/VideoUnavailable";
 import { ActionBar } from "./ActionBar";
 import { ProfileOverlay } from "./ProfileOverlay";
 
@@ -13,6 +16,8 @@ interface VideoSlideProps {
 export function VideoSlide({ profile, isActive }: VideoSlideProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
+  const video = useProfileVideo(profile.videoOwnerId);
+  const playable = isPlayable(video);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -35,26 +40,30 @@ export function VideoSlide({ profile, isActive }: VideoSlideProps) {
     >
       <div className="flex shrink-0 items-center gap-3 sm:gap-4">
         <div className="relative aspect-[9/16] h-[calc(100dvh-3.25rem)] w-auto max-w-[calc(100vw-4.5rem)] shrink-0 overflow-hidden rounded-2xl border-2 border-border bg-black shadow-lg lg:h-[calc(100dvh-0.5rem)] lg:max-w-none">
-          <video
-            ref={videoRef}
-            src={profile.videoLink}
-            muted={muted}
-            loop
-            playsInline
-            preload="auto"
-            className="absolute inset-0 z-0 size-full object-cover"
-            aria-label={`Vidéo de présentation de ${profile.name}`}
-          >
-            {profile.subtitlesUrl && (
-              <track
-                kind="subtitles"
-                src={profile.subtitlesUrl}
-                srcLang="fr"
-                label="Français"
-                default
-              />
-            )}
-          </video>
+          {playable ? (
+            <video
+              ref={videoRef}
+              src={video.playbackUrl ?? undefined}
+              muted={muted}
+              loop
+              playsInline
+              preload="auto"
+              className="absolute inset-0 z-0 size-full object-cover"
+              aria-label={`Vidéo de présentation de ${profile.name}`}
+            >
+              {profile.subtitlesUrl && (
+                <track
+                  kind="subtitles"
+                  src={profile.subtitlesUrl}
+                  srcLang="fr"
+                  label="Français"
+                  default
+                />
+              )}
+            </video>
+          ) : (
+            <VideoUnavailable video={video} className="absolute inset-0 z-0" />
+          )}
 
           <ProfileOverlay profile={profile} />
 
@@ -67,6 +76,7 @@ export function VideoSlide({ profile, isActive }: VideoSlideProps) {
                 Certifié
               </span>
             )}
+            {playable && (
             <button
               type="button"
               onClick={() => setMuted((value) => !value)}
@@ -85,6 +95,7 @@ export function VideoSlide({ profile, isActive }: VideoSlideProps) {
               </svg>
             )}
             </button>
+            )}
           </div>
         </div>
 

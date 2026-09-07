@@ -1,4 +1,3 @@
-import { EXAMPLE_VIDEO_URL } from "@/data/media";
 
 /** Aligné sur l'enum Prisma `UserRole` (hors `admin`, non exposé dans l'UI). */
 export type UserRole = "recruiter" | "jobseeker";
@@ -23,7 +22,6 @@ export interface JobseekerProfile {
   sector: string;
   location: string;
   skills: string;
-  videoLink: string;
   likes: number;
   favorites: number;
   certified?: boolean;
@@ -42,7 +40,6 @@ export const DEFAULT_JOBSEEKER_PROFILE: JobseekerProfile = {
   sector: "",
   location: "",
   skills: "",
-  videoLink: EXAMPLE_VIDEO_URL,
   likes: 0,
   favorites: 0,
   certified: false,
