@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { getProfileBaseId } from "@/data/profiles";
 import { useAuth } from "@/context/AuthContext";
 import { useProfileInteractions } from "@/hooks/useProfileInteractions";
 import { LoginPromptModal } from "./LoginPromptModal";
@@ -132,7 +131,7 @@ export function ActionBar({ profileId, initialLikes, profileName, isActive = fal
 
         {showProfileLink && (
           <Link
-            href={`/profils/${getProfileBaseId(profileId)}`}
+            href={`/profils/${profileId}`}
             aria-label={profileName ? `Voir le profil de ${profileName}` : "Voir le profil"}
             tabIndex={isActive ? 0 : -1}
             className="flex w-full flex-col items-center gap-1 no-underline"

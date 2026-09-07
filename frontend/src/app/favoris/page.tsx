@@ -8,7 +8,7 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { RequireRole } from "@/components/RequireRole";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
-import type { Profile } from "@/data/profiles";
+import type { Profile } from "@/lib/profiles-api";
 import { useAuth } from "@/context/AuthContext";
 import { getFavoritedProfiles } from "@/lib/favorites";
 import { ViewProfileButton } from "@/components/ViewProfileButton";
@@ -72,7 +72,17 @@ export default function FavorisPage() {
   const [favorites, setFavorites] = useState<Profile[]>([]);
 
   useEffect(() => {
-    setFavorites(getFavoritedProfiles(email));
+    let active = true;
+
+    getFavoritedProfiles(email).then((profiles) => {
+      if (active) {
+        setFavorites(profiles);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
   }, [email]);
 
   return (

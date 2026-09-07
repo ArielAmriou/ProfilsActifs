@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import {
-  CATALOG_PAGE_SIZE,
-  getCatalogPage,
-  getCatalogPageCount,
-} from "@/data/profiles";
+import { useEffect, useMemo, useState } from "react";
+import { CATALOG_PAGE_SIZE } from "@/data/profiles";
+import { fetchProfiles, type Profile } from "@/lib/profiles-api";
 import { useAuth } from "@/context/AuthContext";
 import { ProfileCard } from "@/components/ProfileCard";
 import { LoginPromptModal } from "@/components/LoginPromptModal";
@@ -20,9 +17,29 @@ export function ProfileCatalog() {
   const { isAuthenticated } = useAuth();
   const [page, setPage] = useState(1);
   const [loginAction, setLoginAction] = useState<LoginAction | null>(null);
+  const [catalog, setCatalog] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const totalPages = getCatalogPageCount();
-  const profiles = getCatalogPage(page);
+  useEffect(() => {
+    let active = true;
+
+    fetchProfiles().then((fetched) => {
+      if (!active) return;
+      setCatalog(fetched);
+      setLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const totalPages = Math.max(1, Math.ceil(catalog.length / CATALOG_PAGE_SIZE));
+
+  const profiles = useMemo(() => {
+    const start = (Math.min(page, totalPages) - 1) * CATALOG_PAGE_SIZE;
+    return catalog.slice(start, start + CATALOG_PAGE_SIZE);
+  }, [catalog, page, totalPages]);
 
   const requireLogin = (actionLabel: LoginAction) => {
     setLoginAction(actionLabel);
@@ -52,13 +69,23 @@ export function ProfileCatalog() {
         </p>
       </div>
 
-      <ul className="grid list-none grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {profiles.map((profile) => (
-          <li key={profile.id}>
-            <ProfileCard profile={profile} onRequireLogin={requireLogin} />
-          </li>
-        ))}
-      </ul>
+      {loading ? (
+        <p role="status" className="py-16 text-center text-sm text-institutional/70">
+          Chargement des profils…
+        </p>
+      ) : profiles.length === 0 ? (
+        <p role="status" className="py-16 text-center text-sm text-institutional/70">
+          Aucun profil publié pour le moment.
+        </p>
+      ) : (
+        <ul className="grid list-none grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {profiles.map((profile) => (
+            <li key={profile.id}>
+              <ProfileCard profile={profile} onRequireLogin={requireLogin} />
+            </li>
+          ))}
+        </ul>
+      )}
 
       <nav
         className="mt-10 flex items-center justify-center gap-4"

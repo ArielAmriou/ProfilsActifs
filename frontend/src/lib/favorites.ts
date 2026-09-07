@@ -1,20 +1,22 @@
-import type { Profile } from "@/data/profiles";
-import { getProfileById } from "@/data/profiles";
+import { fetchProfiles, type Profile } from "@/lib/profiles-api";
 import { readInteractions } from "@/lib/interactions";
 
-function resolveProfile(profileId: string): Profile | null {
-  return getProfileById(profileId);
+function favoritedIds(email: string | null): string[] {
+  return Object.entries(readInteractions(email))
+    .filter(([, state]) => state.favorited)
+    .map(([profileId]) => profileId);
 }
 
-export function getFavoritedProfiles(email: string | null): Profile[] {
-  const interactions = readInteractions(email);
+export async function getFavoritedProfiles(email: string | null): Promise<Profile[]> {
+  const ids = new Set(favoritedIds(email));
 
-  return Object.entries(interactions)
-    .filter(([, state]) => state.favorited)
-    .map(([profileId]) => resolveProfile(profileId))
-    .filter((profile): profile is Profile => profile !== null);
+  if (ids.size === 0) {
+    return [];
+  }
+
+  return (await fetchProfiles()).filter((profile) => ids.has(profile.id));
 }
 
 export function getFavoriteCount(email: string | null): number {
-  return getFavoritedProfiles(email).length;
+  return favoritedIds(email).length;
 }

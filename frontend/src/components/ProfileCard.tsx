@@ -2,11 +2,9 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import type { Profile } from "@/data/profiles";
-import { getProfileBaseId } from "@/data/profiles";
+import type { Profile } from "@/lib/profiles-api";
 import { useAuth } from "@/context/AuthContext";
 import { useProfileInteractions } from "@/hooks/useProfileInteractions";
-import { useProfileVideo } from "@/hooks/useProfileVideo";
 import { isPlayable } from "@/lib/videos";
 import { VideoUnavailable } from "@/components/video/VideoUnavailable";
 import type { LoginPromptAction } from "@/components/LoginPromptModal";
@@ -20,9 +18,9 @@ export function ProfileCard({ profile, onRequireLogin }: ProfileCardProps) {
   const { isAuthenticated, role } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
-  const video = useProfileVideo(profile.videoOwnerId);
+  const video = profile.video;
   const playable = isPlayable(video);
-  const interactionId = getProfileBaseId(profile.id);
+  const interactionId = profile.id;
   const { liked, favorited, toggleLike, toggleFavorite } = useProfileInteractions(
     interactionId,
     profile.likes,
@@ -156,7 +154,7 @@ export function ProfileCard({ profile, onRequireLogin }: ProfileCardProps) {
             {favorited ? "Enregistré" : "Favori"}
           </button>
           <Link
-            href={`/profils/${getProfileBaseId(profile.id)}`}
+            href={`/profils/${profile.id}`}
             className="font-title rounded-lg border-2 border-border px-3 py-2 text-xs font-bold text-institutional no-underline transition hover:border-institutional"
           >
             Voir le profil

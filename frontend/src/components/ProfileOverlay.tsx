@@ -1,4 +1,4 @@
-import type { Profile } from "@/data/profiles";
+import type { Profile } from "@/lib/profiles-api";
 
 interface ProfileOverlayProps {
   profile: Profile;
