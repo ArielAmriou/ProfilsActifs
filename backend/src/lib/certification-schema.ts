@@ -3,7 +3,7 @@ import { z } from "zod";
 export const questionSchema = z.object({
   id: z.string().min(1, "L'identifiant de la question est requis"),
   question: z.string().min(1, "L'énoncé de la question est requis"),
-  type: z.literal(["single-option", "multiple-option"]),
+  type: z.enum(["single_choice", "multiple_choice"]),
   options: z.array(z.string()).min(1, "Au moins une option est requise"),
   weight: z.number().positive("La pondération doit être un nombre positif"),
 });
