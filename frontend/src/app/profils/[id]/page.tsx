@@ -9,6 +9,8 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { BlockRole } from "@/components/RequireRole";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { VideoPlayer } from "@/components/video/VideoPlayer";
+import { useProfileVideo } from "@/hooks/useProfileVideo";
 import { getProfileById } from "@/data/profiles";
 
 interface ProfileDetailPageProps {
@@ -18,6 +20,7 @@ interface ProfileDetailPageProps {
 export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   const { id } = use(params);
   const profile = getProfileById(id);
+  const video = useProfileVideo(profile?.videoOwnerId);
 
   if (!profile) {
     notFound();
@@ -54,14 +57,11 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
               </div>
 
               <div className="mt-6 w-fit overflow-hidden rounded-2xl border-2 border-border bg-institutional">
-                <video
-                  src={profile.videoLink}
-                  controls
-                  playsInline
+                <VideoPlayer
+                  video={video}
+                  label={`Vidéo de présentation de ${profile.name}`}
                   className="aspect-[9/16] h-auto w-48 object-cover sm:w-56"
-                >
-                  Votre navigateur ne supporte pas la lecture vidéo.
-                </video>
+                />
               </div>
 
               <dl className="mt-8 space-y-4 text-sm text-institutional">

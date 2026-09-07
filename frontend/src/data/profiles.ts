@@ -1,4 +1,4 @@
-import { EXAMPLE_VIDEO_URL } from "@/data/media";
+import { DEMO_VIDEO_OWNER_ID } from "@/data/media";
 
 export interface Profile {
   id: string;
@@ -8,7 +8,7 @@ export interface Profile {
   location: string;
   skills: string[];
   likes: number;
-  videoLink: string;
+  videoOwnerId?: string;
   subtitlesUrl?: string;
   certified: boolean;
 }
@@ -22,7 +22,7 @@ const BASE_PROFILES: Profile[] = [
     location: "Lyon (69)",
     skills: ["Maintenance préventive", "Automatisme", "Soudure TIG"],
     likes: 142,
-    videoLink: EXAMPLE_VIDEO_URL,
+    videoOwnerId: DEMO_VIDEO_OWNER_ID,
     subtitlesUrl: "/subtitles/amine-benali.vtt",
     certified: true,
   },
@@ -34,7 +34,7 @@ const BASE_PROFILES: Profile[] = [
     location: "Nantes (44)",
     skills: ["Accueil", "Anglais C1", "Suite Office"],
     likes: 89,
-    videoLink: EXAMPLE_VIDEO_URL,
+    videoOwnerId: DEMO_VIDEO_OWNER_ID,
     certified: false,
   },
   {
@@ -45,7 +45,7 @@ const BASE_PROFILES: Profile[] = [
     location: "Marseille (13)",
     skills: ["Câblage", "Normes NF C 15-100", "Lecture de plans"],
     likes: 203,
-    videoLink: EXAMPLE_VIDEO_URL,
+    videoOwnerId: DEMO_VIDEO_OWNER_ID,
     certified: true,
   },
   {
@@ -56,7 +56,7 @@ const BASE_PROFILES: Profile[] = [
     location: "Tours (37)",
     skills: ["Soins de base", "Relation patient", "Hygiène hospitalière"],
     likes: 167,
-    videoLink: EXAMPLE_VIDEO_URL,
+    videoOwnerId: DEMO_VIDEO_OWNER_ID,
     certified: true,
   },
   {
@@ -67,7 +67,7 @@ const BASE_PROFILES: Profile[] = [
     location: "Lille (59)",
     skills: ["JavaScript", "React", "Accessibilité web"],
     likes: 56,
-    videoLink: EXAMPLE_VIDEO_URL,
+    videoOwnerId: DEMO_VIDEO_OWNER_ID,
     certified: false,
   },
 ];
