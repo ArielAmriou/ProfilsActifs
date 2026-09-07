@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { HeaderBar } from "@/components/HeaderBar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -10,8 +10,7 @@ import { BlockRole } from "@/components/RequireRole";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
-import { useProfileVideo } from "@/hooks/useProfileVideo";
-import { getProfileById } from "@/data/profiles";
+import { fetchProfile, type Profile } from "@/lib/profiles-api";
 
 interface ProfileDetailPageProps {
   params: Promise<{ id: string }>;
@@ -19,8 +18,35 @@ interface ProfileDetailPageProps {
 
 export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   const { id } = use(params);
-  const profile = getProfileById(id);
-  const video = useProfileVideo(profile?.videoOwnerId);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    fetchProfile(id).then((fetched) => {
+      if (!active) return;
+      setProfile(fetched);
+      setLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
+        <BlockRole blocked="jobseeker">
+          <HeaderBar />
+          <p role="status" className="px-6 py-20 text-center text-sm text-institutional/70">
+            Chargement du profil…
+          </p>
+        </BlockRole>
+      </PageLayout>
+    );
+  }
 
   if (!profile) {
     notFound();
@@ -58,7 +84,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
 
               <div className="mt-6 w-fit overflow-hidden rounded-2xl border-2 border-border bg-institutional">
                 <VideoPlayer
-                  video={video}
+                  video={profile.video}
                   label={`Vidéo de présentation de ${profile.name}`}
                   className="aspect-[9/16] h-auto w-48 object-cover sm:w-56"
                 />

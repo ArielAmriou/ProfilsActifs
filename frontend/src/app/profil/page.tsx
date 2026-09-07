@@ -18,25 +18,41 @@ export default function ProfilPage() {
   const { jobseekerProfile, updateJobseekerProfile, email } = useAuth();
   const [form, setForm] = useState(jobseekerProfile);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   useEffect(() => {
     setForm(jobseekerProfile);
   }, [jobseekerProfile]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!form.birthdate.trim()) {
       return;
     }
-    updateJobseekerProfile({
-      ...form,
-      firstname: form.firstname.trim(),
-      lastname: form.lastname.trim(),
-      name: form.name.trim(),
-      birthdate: form.birthdate.trim(),
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+
+    setPending(true);
+    setError(null);
+
+    try {
+      await updateJobseekerProfile({
+        ...form,
+        firstname: form.firstname.trim(),
+        lastname: form.lastname.trim(),
+        name: form.name.trim(),
+        birthdate: form.birthdate.trim(),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "L'enregistrement a échoué. Réessayez dans un instant.",
+      );
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
@@ -211,11 +227,18 @@ export default function ProfilPage() {
                   </p>
                 )}
 
+                {error && (
+                  <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">
+                    {error}
+                  </p>
+                )}
+
                 <button
                   type="submit"
-                  className="font-title rounded-lg bg-action px-4 py-3 text-sm font-bold text-white transition hover:bg-action-hover"
+                  disabled={pending}
+                  className="font-title rounded-lg bg-action px-4 py-3 text-sm font-bold text-white transition hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Enregistrer le profil
+                  {pending ? "Enregistrement…" : "Enregistrer le profil"}
                 </button>
               </form>
             </ContentCard>

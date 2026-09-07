@@ -15,12 +15,34 @@ import {
   signUpWithEmail,
 } from "@/lib/auth-api";
 import {
+  fetchMyProfile,
+  updateMyProfile,
+  type MyProfilePatch,
+} from "@/lib/profiles-api";
+import {
   DEFAULT_JOBSEEKER_PROFILE,
   JOBSEEKER_PROFILE_KEY,
+  joinSkills,
+  splitSkills,
   toDateInputValue,
   type JobseekerProfile,
   type UserRole,
 } from "@/types/auth";
+
+function toRemotePatch(patch: Partial<JobseekerProfile>): MyProfilePatch {
+  const remote: MyProfilePatch = {};
+
+  if (patch.firstname !== undefined) remote.firstname = patch.firstname;
+  if (patch.lastname !== undefined) remote.lastname = patch.lastname;
+  if (patch.name !== undefined) remote.name = patch.name;
+  if (patch.birthdate !== undefined) remote.birthdate = patch.birthdate;
+  if (patch.title !== undefined) remote.title = patch.title || null;
+  if (patch.sector !== undefined) remote.sector = patch.sector || null;
+  if (patch.location !== undefined) remote.location = patch.location || null;
+  if (patch.skills !== undefined) remote.skills = splitSkills(patch.skills);
+
+  return remote;
+}
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -41,7 +63,7 @@ interface AuthContextValue {
     },
   ) => Promise<UserRole>;
   logout: () => Promise<void>;
-  updateJobseekerProfile: (patch: Partial<JobseekerProfile>) => void;
+  updateJobseekerProfile: (patch: Partial<JobseekerProfile>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -80,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const applyUser = useCallback(
-    (user: {
+    async (user: {
       id: string;
       email: string;
       role: UserRole;
@@ -94,22 +116,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setEmail(user.email);
       setUserId(user.id);
 
-      if (user.role === "jobseeker") {
-        const stored = readJobseekerProfile(user.id);
-        const apiBirthdate = toDateInputValue(user.birthdate);
-        const seeded: JobseekerProfile = {
-          ...DEFAULT_JOBSEEKER_PROFILE,
-          ...stored,
-          firstname: stored.firstname || user.firstname || "",
-          lastname: stored.lastname || user.lastname || "",
-          name: stored.name || user.name || "",
-          birthdate: stored.birthdate || apiBirthdate,
-        };
-        writeJobseekerProfile(user.id, seeded);
-        setJobseekerProfile(seeded);
-      } else {
+      if (user.role !== "jobseeker") {
         setJobseekerProfile(DEFAULT_JOBSEEKER_PROFILE);
+        return;
       }
+
+      const stored = readJobseekerProfile(user.id);
+      const remote = await fetchMyProfile();
+
+      const seeded: JobseekerProfile = {
+        ...DEFAULT_JOBSEEKER_PROFILE,
+        ...stored,
+        firstname: remote?.firstname || user.firstname || "",
+        lastname: remote?.lastname || user.lastname || "",
+        name: remote?.name || user.name || "",
+        birthdate: toDateInputValue(remote?.birthdate ?? user.birthdate),
+        title: remote?.title ?? "",
+        sector: remote?.sector ?? "",
+        location: remote?.location ?? "",
+        skills: joinSkills(remote?.skills ?? []),
+        favorites: remote?.favorites ?? 0,
+      };
+
+      writeJobseekerProfile(user.id, seeded);
+      setJobseekerProfile(seeded);
     },
     [],
   );
@@ -130,7 +160,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const user = await fetchCurrentUser();
       if (cancelled) return;
       if (user) {
-        applyUser(user);
+        await applyUser(user);
       } else {
         clearSession();
       }
@@ -148,7 +178,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Veuillez renseigner votre adresse e-mail et votre mot de passe.");
       }
       const user = await signInWithEmail(nextEmail.trim(), password);
-      applyUser(user);
+      await applyUser(user);
       return user.role;
     },
     [applyUser],
@@ -182,7 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         lastname,
         birthdate,
       });
-      applyUser({
+      await applyUser({
         ...user,
         firstname,
         lastname,
@@ -199,7 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [clearSession]);
 
   const updateJobseekerProfile = useCallback(
-    (patch: Partial<JobseekerProfile>) => {
+    async (patch: Partial<JobseekerProfile>) => {
       setJobseekerProfile((current) => {
         const next = { ...current, ...patch };
         if (userId) {
@@ -207,6 +237,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         return next;
       });
+
+      const remotePatch = toRemotePatch(patch);
+
+      if (Object.keys(remotePatch).length > 0) {
+        await updateMyProfile(remotePatch);
+      }
     },
     [userId],
   );

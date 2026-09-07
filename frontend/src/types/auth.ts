@@ -59,3 +59,14 @@ export function toDateInputValue(value: string | Date | null | undefined): strin
 export function getHomeForRole(role: UserRole): string {
   return role === "recruiter" ? "/" : "/profil";
 }
+
+export function splitSkills(skills: string): string[] {
+  return skills
+    .split(",")
+    .map((skill) => skill.trim())
+    .filter(Boolean);
+}
+
+export function joinSkills(skills: string[]): string {
+  return skills.join(", ");
+}

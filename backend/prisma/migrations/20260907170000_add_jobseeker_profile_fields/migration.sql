@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "users" ADD COLUMN "title" VARCHAR(255);
+ALTER TABLE "users" ADD COLUMN "sector" VARCHAR(255);
+ALTER TABLE "users" ADD COLUMN "location" VARCHAR(255);
+ALTER TABLE "users" ADD COLUMN "skills" TEXT[] NOT NULL DEFAULT '{}';
+ALTER TABLE "users" ADD COLUMN "certified" BOOLEAN NOT NULL DEFAULT false;
