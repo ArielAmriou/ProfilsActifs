@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ContentCard } from "../layout/ContentCard";
 import { useAuth } from "@/context/AuthContext";
-import { Alert, Button } from "@heroui/react";
+import SurveyError from "./SurveyError";
+import LoadingSurvey from "./LoadingSurvey";
 
-interface Question {
+export interface Question {
   id: string;
   question: string;
   type: string;
@@ -14,31 +15,9 @@ interface Question {
   weight: number;
 }
 
-export function SurveyError()
-{
-  return (
-    <Alert status="danger" className="max-w-[500px] justify-center">
-      <Alert.Indicator />
-      <Alert.Content>
-        <Alert.Title>Aucune question disponible</Alert.Title>
-        <Alert.Description>
-          Nous rencontrons actuellement des problèmes de connexion. Veuillez essayer ce qui suit :
-          <ul className="mt-2 list-inside list-disc space-y-1 text-sm">
-            <li>Vérifiez votre connexion internet</li>
-            <li>Rafraîchissez votre page</li>
-            <li>Nettoyez le cache de votre navigateur</li>
-          </ul>
-        </Alert.Description>
-      </Alert.Content>
-    </Alert>
-  );
-}
-
-export function Questionnaire()
-{
+export function Questionnaire() {
   const router = useRouter();
   const { updateJobseekerProfile } = useAuth();
-
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -47,39 +26,31 @@ export function Questionnaire()
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
-        const response = await fetch(`${apiUrl}/api/certification/questions`);
-        console.log(response);
-        if (!response.ok) {
-          throw new Error("Erreur lors de la récupération des questions");
-        }
+        const response = await fetch("http://localhost:8081/api/certification/questions");
         const data = await response.json();
-        setQuestions(data.questions);
-        console.log(data);
+        setQuestions(data.questions || data);
       } catch (error) {
-        console.error(error);
+        console.error("Erreur lors du chargement des questions:", error);
       } finally {
         setLoading(false);
       }
     }
+
     fetchQuestions();
   }, []);
 
   if (loading) {
-    return (
-      <ContentCard className="w-full max-w-2xl shadow-sm text-center py-10">
-        <p className="font-title text-institutional">Chargement du questionnaire...</p>
-      </ContentCard>
-    );
+    return <LoadingSurvey />;
+  } 
+  if (!questions || questions.length === 0) {
+    return <SurveyError />;
   }
-
-  if (!questions || questions.length === 0)
-    return <SurveyError />
 
   const currentQuestionData = questions[currentQuestionIndex];
 
-  if (!currentQuestionData)
+  if (!currentQuestionData) {
     return null;
+  }
 
   const TOTAL_QUESTIONS = questions.length;
   const progress = ((currentQuestionIndex + 1) / TOTAL_QUESTIONS) * 100;
@@ -126,7 +97,7 @@ export function Questionnaire()
         </div>
 
         <div className="space-y-3">
-          {currentQuestionData.options.map((option) => (
+          {currentQuestionData.options?.map((option) => (
             <label
               key={option}
               className={`flex cursor-pointer items-center gap-4 rounded-xl border-2 p-4 transition-all ${
