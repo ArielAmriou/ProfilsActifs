@@ -8,6 +8,7 @@ import { healthRoutes } from "./module/health/health";
 import { authRoutes } from "./module/auth/routes";
 import { videoRoutes } from "./module/video/routes";
 import { userRoutes } from "./module/user/routes";
+import { favoriteRoutes } from "./module/favorite/routes";
 import { auth } from "./middleware/better-auth";
 import { getCertificationData } from "./services/certification.service";
 import { certificationRoutes } from "./module/certification/certification.routes";
@@ -110,6 +111,7 @@ async function createApp() {
   await fastify.register(authRoutes);
   await fastify.register(videoRoutes);
   await fastify.register(userRoutes);
+  await fastify.register(favoriteRoutes);
   await fastify.register(certificationRoutes);
 
   return fastify;
