@@ -25,7 +25,7 @@
     "zod": "^4.5.4"
   },
   "scripts": {
-    "migrate:videos": "bun run scripts/migrate-videos.ts",
+    "migrate:videos": "VIDEO_STORAGE_PATH=var/videos VIDEO_LEGACY_ROOT=../frontend/public bun run scripts/migrate-videos.ts",
     "test": "bun test"
   }
 }
