@@ -31,49 +31,25 @@ model Users {
 }
 
 model Surveys {
-  id          String   @id @default(uuid()) @db.Uuid
-  createdBy   String   @map("created_by") @db.Uuid
-  date        DateTime @db.Timestamp(0)
-  title       String   @db.VarChar(255)
-  description String?  @db.VarChar(255)
-  version     String   @default("1.0") @db.VarChar(50)
-  questions   Questions[]
-  users       Users    @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+  id                String    @id @default(uuid()) @db.Uuid
+  createdBy         String    @map("created_by") @db.Uuid
+  date              DateTime  @db.Timestamp(0)
+  questionnaireFile String    @map("questionnaire_file") @db.VarChar(255)
+  answers           Answers[]
+  users             Users     @relation(fields: [createdBy], references: [id], onDelete: Restrict)
 
   @@map("surveys")
 }
 
-model Questions {
-  id       String   @id @default(uuid()) @db.Uuid
-  surveyId String   @map("survey_id") @db.Uuid
-  label    String   @db.VarChar(255)
-  answers  Answers[]
-  options  Options[]
-  survey   Surveys  @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-
-  @@map("questions")
-}
-
-model Options {
-  id         String    @id @default(uuid()) @db.Uuid
-  questionId String    @map("question_id") @db.Uuid
-  option     String    @db.VarChar(255)
-  answers    Answers[]
-  question   Questions @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  @@map("options")
-}
-
 model Answers {
-  id         String    @id @default(uuid()) @db.Uuid
-  questionId String    @map("question_id") @db.Uuid
-  userId     String    @map("user_id") @db.Uuid
-  optionId   String    @map("option_id") @db.Uuid
-  option     Options   @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  question   Questions @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user       Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid()) @db.Uuid
+  surveyId   String   @map("survey_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  value      String   @db.VarChar(255)
+  survey     Surveys  @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  user       Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([questionId, userId])
+  @@unique([surveyId, userId])
   @@map("answers")
 }
 
