@@ -71,8 +71,9 @@ export function useProfileInteractions(profileId: string, initialLikes: number) 
   return {
     liked: visibleLiked,
     favorited: visibleFavorited,
+    // Compteur conservé en local pour usage futur (stockage DB) — jamais exposé à l'UI.
     likeCount: state.likeCount,
-    showLikeCount: isAuthenticated,
+    showLikeCount: false,
     toggleLike,
     toggleFavorite,
   };

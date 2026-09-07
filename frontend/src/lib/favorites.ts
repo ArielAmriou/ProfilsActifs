@@ -1,10 +1,9 @@
 import type { Profile } from "@/data/profiles";
-import { getInitialProfiles } from "@/data/profiles";
+import { getProfileById } from "@/data/profiles";
 import { readInteractions } from "@/lib/interactions";
 
 function resolveProfile(profileId: string): Profile | null {
-  const baseId = profileId.split("-")[0] ?? profileId;
-  return getInitialProfiles().find((profile) => profile.id === baseId) ?? null;
+  return getProfileById(profileId);
 }
 
 export function getFavoritedProfiles(email: string | null): Profile[] {

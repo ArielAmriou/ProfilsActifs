@@ -61,18 +61,6 @@ body {
   background: var(--color-surface);
 }
 
-/* Verrouille le scroll page uniquement sur le catalogue (feed) */
-html.feed-lock,
-html.feed-lock body {
-  overflow: hidden;
-  height: 100%;
-  scrollbar-width: none;
-}
-
-html.feed-lock::-webkit-scrollbar {
-  display: none;
-}
-
 h1,
 h2,
 h3,
@@ -100,32 +88,4 @@ h3,
 
 .skip-link:focus {
   top: 1rem;
-}
-
-.loop-link {
-  position: absolute;
-  left: -100vw;
-  display: block;
-  padding: 0.75rem 1rem;
-  background: var(--color-institutional);
-  color: white;
-  font-family: var(--font-title);
-  font-size: 0.875rem;
-  font-weight: 700;
-  text-decoration: none;
-  border: none;
-  border-radius: 0.375rem;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.loop-link:focus {
-  position: static;
-  left: auto;
-  margin: 1rem auto;
-  width: fit-content;
-}
-
-.feed-slide {
-  height: 100dvh;
 }
