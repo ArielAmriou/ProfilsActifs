@@ -6,7 +6,7 @@
         {
             "id": "1",
             "question": "Quel est votre niveau d'expérience en développement web ?",
-            "type": "single_choice",
+            "type": "single-option",
             "options": [
                 "Moins d'un an",
                 "Entre 1 et 3 ans",

@@ -7,7 +7,7 @@ export const TECHNICAL_DEMO_DISCLAIMER =
 
 interface SiteFooterProps {
   className?: string;
-  /** fixed = toujours visible (y compris feed avec feed-lock) */
+  /** fixed = footer collé en bas de viewport */
   fixed?: boolean;
 }
 

@@ -8,6 +8,7 @@ export interface AuthUser {
   role: UserRole;
   firstname?: string;
   lastname?: string;
+  birthdate?: string;
 }
 
 interface ApiUser {
@@ -17,6 +18,7 @@ interface ApiUser {
   role?: string;
   firstname?: string;
   lastname?: string;
+  birthdate?: string | Date;
 }
 
 function mapUser(user: ApiUser): AuthUser {
@@ -28,6 +30,12 @@ function mapUser(user: ApiUser): AuthUser {
     user.email;
 
   const role = isUserRole(user.role) ? user.role : "jobseeker";
+  const birthdate =
+    typeof user.birthdate === "string"
+      ? user.birthdate
+      : user.birthdate instanceof Date
+        ? user.birthdate.toISOString()
+        : undefined;
 
   return {
     id: user.id,
@@ -36,6 +44,7 @@ function mapUser(user: ApiUser): AuthUser {
     role,
     firstname: user.firstname,
     lastname: user.lastname,
+    birthdate,
   };
 }
 
@@ -92,13 +101,30 @@ export async function signUpWithEmail(
   email: string,
   password: string,
   role: UserRole,
-  profile?: { firstname?: string; lastname?: string; name?: string },
+  profile: {
+    firstname: string;
+    lastname: string;
+    name?: string;
+    birthdate: string;
+  },
 ): Promise<AuthUser> {
+  const firstname = profile.firstname.trim();
+  const lastname = profile.lastname.trim();
+  if (!firstname || !lastname) {
+    throw new Error("Le prénom et le nom sont obligatoires.");
+  }
+
   const localPart = email.split("@")[0]?.trim() || "utilisateur";
-  const firstname = profile?.firstname?.trim() || localPart;
-  const lastname =
-    profile?.lastname?.trim() || (role === "recruiter" ? "Recruiter" : "Jobseeker");
-  const name = profile?.name?.trim() || localPart;
+  const name = profile.name?.trim() || `${firstname} ${lastname}`.trim() || localPart;
+  const birthdateRaw = profile.birthdate.trim();
+  if (!birthdateRaw) {
+    throw new Error("La date de naissance est obligatoire.");
+  }
+
+  const birthdateDate = new Date(`${birthdateRaw}T00:00:00.000Z`);
+  if (Number.isNaN(birthdateDate.getTime())) {
+    throw new Error("La date de naissance est invalide.");
+  }
 
   try {
     const data = await apiFetch<unknown>("/api/auth/sign-up/email", {
@@ -110,7 +136,7 @@ export async function signUpWithEmail(
         firstname,
         lastname,
         role,
-        birthdate: "2000-01-01T00:00:00.000Z",
+        birthdate: birthdateDate.toISOString(),
       }),
     });
 

@@ -21,7 +21,6 @@ model Users {
 
   answers       Answers[]
   favorites     Favorites[]
-  likes         Likes[]
   surveys       Surveys[]
   videos        Videos?
   sessions      Session[]
@@ -63,7 +62,6 @@ model Videos {
   createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt    DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
   favorites    Favorites[]
-  likes        Likes[]
   user         Users       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([providerName, providerId])
@@ -78,16 +76,6 @@ model Favorites {
 
   @@id([videoId, userId])
   @@map("favorites")
-}
-
-model Likes {
-  videoId String @map("video_id") @db.Uuid
-  userId  String @map("user_id") @db.Uuid
-  user    Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  video   Videos @relation(fields: [videoId], references: [id], onDelete: Cascade)
-
-  @@id([videoId, userId])
-  @@map("likes")
 }
 
 model Session {

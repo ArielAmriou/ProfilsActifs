@@ -13,6 +13,8 @@ export interface Profile {
   certified: boolean;
 }
 
+export const CATALOG_PAGE_SIZE = 20;
+
 const BASE_PROFILES: Profile[] = [
   {
     id: "1",
@@ -72,23 +74,40 @@ const BASE_PROFILES: Profile[] = [
   },
 ];
 
-export function getProfileBatch(page: number, pageSize = 3): Profile[] {
-  const start = (page % Math.ceil(BASE_PROFILES.length / pageSize)) * pageSize;
-  return BASE_PROFILES.slice(start, start + pageSize).map((profile, index) => ({
-    ...profile,
-    id: `${profile.id}-p${page}-${index}`,
-  }));
+/** Catalogue démo : 40 profils (2 pages de 20) à partir des fiches de base. */
+function buildCatalog(): Profile[] {
+  const catalog: Profile[] = [];
+  const total = CATALOG_PAGE_SIZE * 2;
+  for (let i = 0; i < total; i += 1) {
+    const base = BASE_PROFILES[i % BASE_PROFILES.length]!;
+    const pageIndex = Math.floor(i / CATALOG_PAGE_SIZE) + 1;
+    catalog.push({
+      ...base,
+      id: `${base.id}-c${i + 1}`,
+      name: pageIndex > 1 ? `${base.name} (${i + 1})` : base.name,
+    });
+  }
+  return catalog;
 }
 
-export function getInitialProfiles(): Profile[] {
-  return BASE_PROFILES;
+const CATALOG = buildCatalog();
+
+export function getCatalogPageCount(pageSize = CATALOG_PAGE_SIZE): number {
+  return Math.max(1, Math.ceil(CATALOG.length / pageSize));
 }
 
-export function getProfileBaseId(profileId: string): string {
-  return profileId.split("-")[0] ?? profileId;
+export function getCatalogPage(page: number, pageSize = CATALOG_PAGE_SIZE): Profile[] {
+  const totalPages = getCatalogPageCount(pageSize);
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const start = (safePage - 1) * pageSize;
+  return CATALOG.slice(start, start + pageSize);
 }
 
 export function getProfileById(profileId: string): Profile | null {
   const baseId = getProfileBaseId(profileId);
   return BASE_PROFILES.find((profile) => profile.id === baseId) ?? null;
+}
+
+export function getProfileBaseId(profileId: string): string {
+  return profileId.split("-")[0] ?? profileId;
 }
