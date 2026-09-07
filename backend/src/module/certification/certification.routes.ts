@@ -1,19 +1,23 @@
 import type { FastifyInstance } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { getCertificationData } from "../../services/certification.service";
+import { certificationFileSchema } from "../../lib/certification-schema";
 
-export async function certificationRoutes(fastify: FastifyInstance)
-{
-    fastify.route({
+export async function certificationRoutes(fastify: FastifyInstance) {
+    fastify.withTypeProvider<ZodTypeProvider>().route({
         method: ["GET"],
         url: "/api/certification/questions",
         schema: {
-            tags: ["certification"],
+            tags: ["Certification"],
             summary: "Route to get certification questions",
-            description: "Get the questions of the certification"
+            description: "Get the questions of the certification",
+            response: {
+                200: certificationFileSchema,
+            },
         },
-        handler: async (request, reply) => {
+        handler: async (_request, reply) => {
             const certifData = await getCertificationData();
-            reply.send(certifData);
-        }
+            return reply.send(certifData);
+        },
     });
 }
