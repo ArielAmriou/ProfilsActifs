@@ -19,6 +19,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Profil", href: "/profil", roles: ["jobseeker"] },
   { label: "Ma vidéo", href: "/ma-video", roles: ["jobseeker"] },
   { label: "Questionnaire", href: "/questionnaire", roles: ["jobseeker"] },
+  { label: "Profil Admin", href: "/admin", roles: ["admin"] },
 ];
 
 function SidebarBrandAndQuote() {
@@ -72,7 +73,9 @@ export function AppSidebar() {
 
       {isAuthenticated && (
         <p className="mt-auto pt-8 text-sm leading-relaxed text-institutional/70">
-          {role === "jobseeker"
+          {role === "admin"
+            ? "Gérez la plateforme depuis votre espace administrateur."
+            : role === "jobseeker"
             ? "Gérez votre profil vidéo et complétez votre questionnaire."
             : "Valorisez vos compétences professionnelles par la vidéo."}
         </p>

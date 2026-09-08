@@ -1,9 +1,9 @@
 
 /** Aligné sur l'enum Prisma `UserRole` (hors `admin`, non exposé dans l'UI). */
-export type UserRole = "recruiter" | "jobseeker";
+export type UserRole = "recruiter" | "jobseeker" | "admin";
 
 export function isUserRole(value: string | null | undefined): value is UserRole {
-  return value === "recruiter" || value === "jobseeker";
+  return value === "recruiter" || value === "jobseeker" || value === "admin";
 }
 
 /**
@@ -56,7 +56,10 @@ export function toDateInputValue(value: string | Date | null | undefined): strin
   return date.toISOString().slice(0, 10);
 }
 
-export function getHomeForRole(role: UserRole): string {
+export function getHomeForRole(role: UserRole): string
+{
+  if (role === "admin")
+    return "/admin";
   return role === "recruiter" ? "/" : "/profil";
 }
 
