@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { getSessionUser } from "../../middleware/session";
+import { publishNotification } from "../notifications/service";
 import {
   getJobseekerProfile,
   getOwnProfile,
@@ -118,6 +119,17 @@ export async function profileRoutes(fastify: FastifyInstance) {
 
       if (!profile) {
         return reply.status(404).send({ error: "Profil introuvable" });
+      }
+
+      const viewer = await getSessionUser(request);
+
+      if (viewer && viewer.role === "recruiter" && viewer.id !== profile.id) {
+        await publishNotification({
+          recipientId: profile.id,
+          actorId: viewer.id,
+          type: "PROFILE_VIEWED",
+          payload: {},
+        });
       }
 
       return reply.send(profile);

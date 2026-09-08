@@ -10,6 +10,7 @@ import { videoRoutes } from "./module/video/routes";
 import { profileRoutes } from "./module/profiles/routes";
 import { userRoutes } from "./module/user/routes";
 import { favoriteRoutes } from "./module/favorite/routes";
+import { notificationRoutes } from "./module/notifications/routes";
 import { auth } from "./middleware/better-auth";
 import { getCertificationData } from "./services/certification.service";
 import { certificationRoutes } from "./module/certification/certification.routes";
@@ -52,6 +53,7 @@ async function createApp() {
         { name: "video", description: "Video storage behind the provider abstraction" },
         { name: "profiles", description: "Public jobseeker profiles" },
         { name: "user", description: "User profiles" },
+        { name: "notifications", description: "Real-time notification stream (SSE)" },
       ],
     },
     transform: jsonSchemaTransform,
@@ -115,6 +117,7 @@ async function createApp() {
   await fastify.register(profileRoutes);
   await fastify.register(userRoutes);
   await fastify.register(favoriteRoutes);
+  await fastify.register(notificationRoutes);
   await fastify.register(certificationRoutes);
 
   return fastify;
