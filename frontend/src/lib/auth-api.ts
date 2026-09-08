@@ -106,12 +106,19 @@ export async function signUpWithEmail(
     lastname: string;
     name?: string;
     birthdate: string;
+    cguAccepted: boolean;
   },
 ): Promise<AuthUser> {
   const firstname = profile.firstname.trim();
   const lastname = profile.lastname.trim();
   if (!firstname || !lastname) {
     throw new Error("Le prénom et le nom sont obligatoires.");
+  }
+
+  if (!profile.cguAccepted) {
+    throw new Error(
+      "Vous devez accepter les Conditions Générales d'Utilisation pour créer un compte.",
+    );
   }
 
   const localPart = email.split("@")[0]?.trim() || "utilisateur";
@@ -137,6 +144,7 @@ export async function signUpWithEmail(
         lastname,
         role,
         birthdate: birthdateDate.toISOString(),
+        cguAcceptedAt: new Date().toISOString(),
       }),
     });
 

@@ -84,6 +84,7 @@ function AuthForm() {
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [birthdate, setBirthdate] = useState("");
+  const [cguAccepted, setCguAccepted] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>("recruiter");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -120,6 +121,13 @@ function AuthForm() {
       return;
     }
 
+    if (mode === "register" && !cguAccepted) {
+      setError(
+        "Vous devez accepter les Conditions Générales d'Utilisation pour créer un compte.",
+      );
+      return;
+    }
+
     setSubmitting(true);
     try {
       const nextRole =
@@ -129,6 +137,7 @@ function AuthForm() {
               firstname,
               lastname,
               birthdate,
+              cguAccepted,
             });
 
       router.push(redirectParam ?? getHomeForRole(nextRole));
@@ -303,6 +312,32 @@ function AuthForm() {
                   onChange={(event) => setBirthdate(event.target.value)}
                   className={inputClassName}
                 />
+              </div>
+            )}
+
+            {mode === "register" && (
+              <div className="flex items-start gap-3 rounded-lg border-2 border-border bg-content-bg p-3">
+                <input
+                  id="cgu"
+                  name="cgu"
+                  type="checkbox"
+                  required
+                  checked={cguAccepted}
+                  onChange={(event) => setCguAccepted(event.target.checked)}
+                  className="mt-0.5 size-5 shrink-0 accent-action"
+                />
+                <label htmlFor="cgu" className="text-sm text-institutional">
+                  J&apos;ai lu et j&apos;accepte les{" "}
+                  <Link
+                    href="/cgu"
+                    target="_blank"
+                    className="font-title font-bold text-institutional underline"
+                  >
+                    Conditions Générales d&apos;Utilisation
+                  </Link>
+                  . La date et l&apos;heure de votre acceptation sont conservées ; vous pouvez la
+                  révoquer à tout moment depuis votre profil.
+                </label>
               </div>
             )}
 
