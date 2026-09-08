@@ -1,4 +1,5 @@
-import type { FastifyInstance } from "fastify";
+import type { OutgoingHttpHeaders } from "node:http";
+import type { FastifyInstance, FastifyReply } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { getSessionUser } from "../../middleware/session";
 import { registerClient } from "./registry";
@@ -6,6 +7,12 @@ import { getNotificationsSince } from "./service";
 import { notificationErrorSchema, notificationStreamQuerySchema } from "./schemas";
 
 const HEARTBEAT_MS = 20_000;
+
+function corsHeaders(reply: FastifyReply): OutgoingHttpHeaders {
+  return Object.fromEntries(
+    Object.entries(reply.getHeaders()).filter(([name]) => name.startsWith("access-control-")),
+  );
+}
 
 export async function notificationRoutes(fastify: FastifyInstance) {
   const typed = fastify.withTypeProvider<ZodTypeProvider>();
@@ -38,10 +45,13 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       }
 
       reply.raw.writeHead(200, {
+        ...corsHeaders(reply),
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
       });
+      reply.raw.flushHeaders();
+      reply.raw.write(": connected\n\n");
 
       const since = request.query.since ? new Date(request.query.since) : undefined;
       const missed = await getNotificationsSince(user.id, since);
