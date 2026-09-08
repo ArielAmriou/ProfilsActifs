@@ -13,8 +13,8 @@ export default function QuestionnairePage() {
     <>
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
         <RequireRole allowed={["jobseeker"]}>
-          <HeaderBar />
           <CandidateDisclaimerBanner />
+          <HeaderBar className="pointer-events-none relative z-30 flex items-center justify-end gap-3 px-4 py-3 lg:px-8" />
           <div className="flex flex-1 items-center justify-center px-6 py-10 lg:px-10">
             <Questionnaire />
           </div>
