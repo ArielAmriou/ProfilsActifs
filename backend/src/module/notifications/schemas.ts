@@ -17,10 +17,29 @@ export const notificationSchema = z.object({
   actor: notificationActorSchema.nullable(),
   payload: z.record(z.string(), z.unknown()),
   createdAt: z.iso.datetime(),
+  readAt: z.iso.datetime().nullable(),
+  read: z.boolean(),
 });
 
 export const notificationStreamQuerySchema = z.object({
   since: z.iso.datetime().optional(),
+});
+
+export const notificationListSchema = z.object({
+  notifications: z.array(notificationSchema),
+});
+
+export const notificationUnreadCountSchema = z.object({
+  count: z.number().int().nonnegative(),
+});
+
+export const notificationIdParamSchema = z.object({
+  id: z.uuid(),
+});
+
+export const notificationMutationSchema = z.object({
+  ok: z.boolean(),
+  count: z.number().int().nonnegative().optional(),
 });
 
 export const notificationErrorSchema = z.object({ error: z.string() });
