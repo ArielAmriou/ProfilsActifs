@@ -125,7 +125,7 @@ export function ActionBar({ profileId, initialLikes, profileName, isActive = fal
             <BookmarkIcon filled={favorited} />
           </span>
           <span className="font-title w-full text-center text-sm font-bold text-institutional">
-            {favorited ? "Enregistré" : "Favori"}
+            Favori
           </span>
         </button>
 

@@ -1,14 +1,17 @@
 import { fetchProfiles, type Profile } from "@/lib/profiles-api";
+import { fetchFavoriteUserIds } from "@/lib/favorites-api";
 import { readInteractions } from "@/lib/interactions";
 
-function favoritedIds(email: string | null): string[] {
-  return Object.entries(readInteractions(email))
-    .filter(([, state]) => state.favorited)
-    .map(([profileId]) => profileId);
-}
-
+/** Favoris serveur (recruteur) + repli localStorage pour compat. */
 export async function getFavoritedProfiles(email: string | null): Promise<Profile[]> {
-  const ids = new Set(favoritedIds(email));
+  const fromApi = await fetchFavoriteUserIds();
+  const ids = new Set(
+    fromApi.length > 0
+      ? fromApi
+      : Object.entries(readInteractions(email))
+          .filter(([, state]) => state.favorited)
+          .map(([profileId]) => profileId),
+  );
 
   if (ids.size === 0) {
     return [];
@@ -18,5 +21,6 @@ export async function getFavoritedProfiles(email: string | null): Promise<Profil
 }
 
 export function getFavoriteCount(email: string | null): number {
-  return favoritedIds(email).length;
+  return Object.entries(readInteractions(email)).filter(([, state]) => state.favorited)
+    .length;
 }

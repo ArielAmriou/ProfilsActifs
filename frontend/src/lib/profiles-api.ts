@@ -10,6 +10,7 @@ export interface Profile {
   skills: string[];
   certified: boolean;
   likes: number;
+  videoId: string | null;
   video: VideoDescriptor;
   subtitlesUrl?: string;
 }
@@ -25,6 +26,7 @@ interface ApiProfile {
   skills: string[];
   certified: boolean;
   favorites: number;
+  videoId: string | null;
   video: VideoDescriptor;
 }
 
@@ -45,6 +47,7 @@ function toProfile(profile: ApiProfile): Profile {
     skills: profile.skills,
     certified: profile.certified,
     likes: profile.favorites,
+    videoId: profile.videoId ?? null,
     video: profile.video ?? NO_VIDEO,
   };
 }
