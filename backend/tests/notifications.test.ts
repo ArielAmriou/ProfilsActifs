@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { prisma } from "../src/lib/prisma";
 import { registerClient, pushToClient } from "../src/module/notifications/registry";
-import { getNotificationsSince, publishNotification } from "../src/module/notifications/service";
+import { getNotificationsSince, publishNotification, publishNotificationOncePerActor } from "../src/module/notifications/service";
 
 describe("notifications registry", () => {
   test("delivers a pushed event to every registered client for that user", () => {
@@ -120,5 +120,31 @@ describe("notifications service", () => {
         payload: {},
       }),
     ).resolves.toBeUndefined();
+  });
+
+  test("publishNotificationOncePerActor creates PROFILE_VIEWED only once per recruiter", async () => {
+    const before = await getNotificationsSince(recipientId);
+
+    await publishNotificationOncePerActor({
+      recipientId,
+      actorId,
+      type: "PROFILE_VIEWED",
+      payload: {},
+    });
+    await publishNotificationOncePerActor({
+      recipientId,
+      actorId,
+      type: "PROFILE_VIEWED",
+      payload: {},
+    });
+
+    const after = await getNotificationsSince(recipientId);
+    const viewsFromActor = after.filter(
+      (notification) =>
+        notification.type === "PROFILE_VIEWED" && notification.actor?.id === actorId,
+    );
+
+    expect(after.length).toBe(before.length + 1);
+    expect(viewsFromActor).toHaveLength(1);
   });
 });

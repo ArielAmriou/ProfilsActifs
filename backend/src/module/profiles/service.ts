@@ -21,13 +21,14 @@ const SELECTION = {
   certified: true,
   videos: {
     select: {
+      id: true,
       providerName: true,
       providerId: true,
       status: true,
       size: true,
-      _count: { select: { favorites: true } },
     },
   },
+  _count: { select: { favoritesReceived: true } },
 } as const;
 
 type JobseekerRow = Awaited<ReturnType<typeof findJobseekers>>[number];
@@ -43,6 +44,7 @@ export interface PublicProfile {
   skills: string[];
   certified: boolean;
   favorites: number;
+  videoId: string | null;
   video: VideoDescriptor;
 }
 
@@ -55,11 +57,12 @@ function findJobseekers() {
 }
 
 async function toPublicProfile(row: JobseekerRow): Promise<PublicProfile> {
-  const { videos, ...user } = row;
+  const { videos, _count, ...user } = row;
 
   return {
     ...user,
-    favorites: videos?._count.favorites ?? 0,
+    favorites: _count.favoritesReceived,
+    videoId: videos?.id ?? null,
     video: videos ? await describeVideo(videos) : NO_VIDEO,
   };
 }
@@ -121,7 +124,7 @@ const OWN_SELECTION = {
   certified: true,
   cguAcceptedAt: true,
   cguVersion: true,
-  videos: { select: { _count: { select: { favorites: true } } } },
+  _count: { select: { favoritesReceived: true } },
 } as const;
 
 type OwnRow = NonNullable<Awaited<ReturnType<typeof findOwnRow>>>;
@@ -131,13 +134,13 @@ function findOwnRow(id: string) {
 }
 
 function toOwnProfile(row: OwnRow): OwnProfile {
-  const { videos, birthdate, role, cguAcceptedAt, ...user } = row;
+  const { _count, birthdate, role, cguAcceptedAt, ...user } = row;
 
   return {
     ...user,
     role: String(role),
     birthdate: birthdate.toISOString().slice(0, 10),
-    favorites: videos?._count.favorites ?? 0,
+    favorites: _count.favoritesReceived,
     cguAcceptedAt: cguAcceptedAt ? cguAcceptedAt.toISOString() : null,
   };
 }

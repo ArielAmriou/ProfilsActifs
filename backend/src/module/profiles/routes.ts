@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { getSessionUser } from "../../middleware/session";
-import { publishNotification } from "../notifications/service";
+import { publishNotificationOncePerActor } from "../notifications/service";
 import {
   getJobseekerProfile,
   getOwnProfile,
@@ -124,7 +124,7 @@ export async function profileRoutes(fastify: FastifyInstance) {
       const viewer = await getSessionUser(request);
 
       if (viewer && viewer.role === "recruiter" && viewer.id !== profile.id) {
-        await publishNotification({
+        await publishNotificationOncePerActor({
           recipientId: profile.id,
           actorId: viewer.id,
           type: "PROFILE_VIEWED",

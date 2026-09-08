@@ -18,6 +18,7 @@ export const profileSchema = z.object({
   skills: z.array(z.string()),
   certified: z.boolean(),
   favorites: z.number(),
+  videoId: z.uuid().nullable(),
   video: profileVideoSchema,
 });
 
