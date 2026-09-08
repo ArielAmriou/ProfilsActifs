@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { openAPI } from "better-auth/plugins";
 import { prisma } from "../lib/prisma";
+import { CGU_VERSION } from "../config/cgu";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -31,6 +32,23 @@ export const auth = betterAuth({
       lastname: { type: "string", required: true, returned: true },
       role: { type: "string", required: true, returned: true },
       birthdate: { type: "date", required: true, returned: true },
+      cguAcceptedAt: { type: "date", required: false, returned: true },
+      cguVersion: { type: "string", required: false, returned: true },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          if (!user.cguAcceptedAt) {
+            return false;
+          }
+
+          return {
+            data: { ...user, cguAcceptedAt: new Date(), cguVersion: CGU_VERSION },
+          };
+        },
+      },
     },
   },
 });
