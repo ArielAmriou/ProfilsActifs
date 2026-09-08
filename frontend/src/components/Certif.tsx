@@ -1,21 +1,15 @@
-export function CertifiedBadge() {
+interface CertifiedBadgeProps {
+  className?: string;
+}
+
+/** Badge orange « Certifié » — même rendu que sur la fiche / carte profil. */
+export function CertifiedBadge({ className = "" }: CertifiedBadgeProps) {
   return (
-    <span 
-      title="Profil Certifié (Questionnaire complété)" 
-      className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-white shadow-sm"
+    <span
+      title="Profil certifié (questionnaire complété)"
+      className={`font-title inline-flex rounded-full bg-action px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white ${className}`}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-3 w-3"
-      >
-        <polyline points="20 6 9 17 4 12"></polyline>
-      </svg>
+      Certifié
     </span>
   );
 }

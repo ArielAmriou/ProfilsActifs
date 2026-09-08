@@ -12,6 +12,7 @@ import type { Profile } from "@/lib/profiles-api";
 import { useAuth } from "@/context/AuthContext";
 import { getFavoritedProfiles } from "@/lib/favorites";
 import { ViewProfileButton } from "@/components/ViewProfileButton";
+import { CertifiedBadge } from "@/components/Certif";
 
 function FavoriteCard({ profile }: { profile: Profile }) {
   return (
@@ -23,11 +24,7 @@ function FavoriteCard({ profile }: { profile: Profile }) {
             {profile.title}
           </p>
         </div>
-        {profile.certified && (
-          <span className="font-title shrink-0 rounded-full bg-action px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-            Certifié
-          </span>
-        )}
+        {profile.certified && <CertifiedBadge className="shrink-0" />}
       </div>
 
       <dl className="mt-4 space-y-1 text-sm text-institutional/85">
