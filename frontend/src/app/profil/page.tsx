@@ -10,6 +10,7 @@ import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuth } from "@/context/AuthContext";
 import { CertifiedBadge } from "@/components/Certif";
+import { CguConsent } from "@/components/CguConsent";
 
 const inputClassName =
   "mt-1.5 w-full rounded-lg border-2 border-border bg-surface px-3 py-2.5 text-institutional outline-none focus:border-action focus:ring-2 focus:ring-action/30";
@@ -241,6 +242,8 @@ export default function ProfilPage() {
                   {pending ? "Enregistrement…" : "Enregistrer le profil"}
                 </button>
               </form>
+
+              <CguConsent />
             </ContentCard>
           </div>
         </RequireRole>

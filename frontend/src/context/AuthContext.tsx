@@ -60,6 +60,7 @@ interface AuthContextValue {
       firstname: string;
       lastname: string;
       birthdate: string;
+      cguAccepted: boolean;
     },
   ) => Promise<UserRole>;
   logout: () => Promise<void>;
@@ -193,6 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         firstname: string;
         lastname: string;
         birthdate: string;
+        cguAccepted: boolean;
       },
     ) => {
       if (!nextEmail.trim() || !password.trim()) {
@@ -207,10 +209,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!birthdate) {
         throw new Error("La date de naissance est obligatoire.");
       }
+      if (!profile.cguAccepted) {
+        throw new Error(
+          "Vous devez accepter les Conditions Générales d'Utilisation pour créer un compte.",
+        );
+      }
       const user = await signUpWithEmail(nextEmail.trim(), password, nextRole, {
         firstname,
         lastname,
         birthdate,
+        cguAccepted: profile.cguAccepted,
       });
       await applyUser({
         ...user,

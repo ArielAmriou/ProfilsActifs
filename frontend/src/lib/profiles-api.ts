@@ -80,6 +80,8 @@ export interface MyProfile {
   skills: string[];
   certified: boolean;
   favorites: number;
+  cguAcceptedAt: string | null;
+  cguVersion: string | null;
 }
 
 export interface MyProfilePatch {
@@ -105,5 +107,12 @@ export function updateMyProfile(patch: MyProfilePatch): Promise<MyProfile> {
   return apiFetch<MyProfile>("/api/me/profile", {
     method: "PATCH",
     body: JSON.stringify(patch),
+  });
+}
+
+export function setCguConsent(accepted: boolean): Promise<MyProfile> {
+  return apiFetch<MyProfile>("/api/me/cgu", {
+    method: "PUT",
+    body: JSON.stringify({ accepted }),
   });
 }

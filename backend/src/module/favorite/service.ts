@@ -1,5 +1,6 @@
 import type { UserRole } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
+import { publishNotification } from "../notifications/service";
 import { FavoriteVideoNotFoundError } from "./errors";
 
 export interface FavoriteUser {
@@ -23,18 +24,31 @@ const FAVORITE_USER_SELECT = {
 export async function setFavorite(recruiterId: string, videoId: string): Promise<FavoriteUser> {
   const video = await prisma.videos.findUnique({
     where: { id: videoId },
-    select: { user: { select: FAVORITE_USER_SELECT } },
+    select: { userId: true, user: { select: FAVORITE_USER_SELECT } },
   });
 
   if (!video) {
     throw new FavoriteVideoNotFoundError(videoId);
   }
 
+  const alreadyFavorited = await prisma.favorites.findUnique({
+    where: { videoId_userId: { videoId, userId: recruiterId } },
+  });
+
   await prisma.favorites.upsert({
     where: { videoId_userId: { videoId, userId: recruiterId } },
     create: { videoId, userId: recruiterId },
     update: {},
   });
+
+  if (!alreadyFavorited) {
+    await publishNotification({
+      recipientId: video.userId,
+      actorId: recruiterId,
+      type: "FAVORITE_ADDED",
+      payload: { videoId },
+    });
+  }
 
   return video.user;
 }
