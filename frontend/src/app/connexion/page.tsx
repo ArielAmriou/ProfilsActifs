@@ -7,6 +7,7 @@ import { ConnexionSidebar } from "@/components/AppSidebar";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuth } from "@/context/AuthContext";
+import { FrenchDateInput } from "@/components/FrenchDateInput";
 import { getHomeForRole, type UserRole } from "@/types/auth";
 
 type AuthMode = "login" | "register";
@@ -116,8 +117,8 @@ function AuthForm() {
       return;
     }
 
-    if (mode === "register" && !birthdate.trim()) {
-      setError("La date de naissance est obligatoire.");
+    if (mode === "register" && !/^\d{4}-\d{2}-\d{2}$/.test(birthdate.trim())) {
+      setError("La date de naissance doit être au format JJ/MM/AAAA.");
       return;
     }
 
@@ -302,14 +303,13 @@ function AuthForm() {
                 <label htmlFor="birthdate" className="font-title block text-sm font-bold">
                   Date de naissance
                 </label>
-                <input
+                <FrenchDateInput
                   id="birthdate"
                   name="birthdate"
-                  type="date"
                   autoComplete="bday"
                   required
                   value={birthdate}
-                  onChange={(event) => setBirthdate(event.target.value)}
+                  onChange={setBirthdate}
                   className={inputClassName}
                 />
               </div>
