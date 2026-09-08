@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useNotifications } from "@/context/NotificationsContext";
 import type { UserRole } from "@/types/auth";
 
 interface MobileNavItem {
@@ -15,9 +16,28 @@ const MOBILE_ITEMS: MobileNavItem[] = [
   { label: "Profils", href: "/", roles: ["recruiter"] },
   { label: "Favoris", href: "/favoris", roles: ["recruiter"] },
   { label: "Profil", href: "/profil", roles: ["jobseeker"] },
+  { label: "Notifs", href: "/notifications", roles: ["jobseeker"] },
   { label: "Ma vidéo", href: "/ma-video", roles: ["jobseeker"] },
   { label: "Questionnaire", href: "/questionnaire", roles: ["jobseeker"] },
 ];
+
+function MobileNotifsLabel({ active }: { active: boolean }) {
+  const { unreadCount } = useNotifications();
+
+  return (
+    <span className="relative">
+      Notifs
+      {unreadCount > 0 && (
+        <span
+          className={`absolute -right-3 -top-1 size-2 rounded-full ${
+            active ? "bg-white" : "bg-action"
+          }`}
+          aria-hidden="true"
+        />
+      )}
+    </span>
+  );
+}
 
 export function MobileBottomNav() {
   const pathname = usePathname();
@@ -64,7 +84,11 @@ export function MobileBottomNav() {
               isActive ? "bg-action text-white" : "text-institutional"
             }`}
           >
-            {item.label}
+            {item.href === "/notifications" ? (
+              <MobileNotifsLabel active={isActive} />
+            ) : (
+              item.label
+            )}
           </Link>
         );
       })}

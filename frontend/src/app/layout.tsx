@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/context/AuthContext";
+import { NotificationsProvider } from "@/context/NotificationsContext";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import "./globals.css";
 
@@ -15,7 +16,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <a href="#contenu-principal" className="skip-link">
           Aller au contenu principal
         </a>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <NotificationsProvider>{children}</NotificationsProvider>
+        </AuthProvider>
         {/* Mention juridique — toutes les pages publiques */}
         <SiteFooter />
       </body>
