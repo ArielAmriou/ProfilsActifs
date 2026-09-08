@@ -43,7 +43,11 @@ export const myProfileSchema = z.object({
   skills: z.array(z.string()),
   certified: z.boolean(),
   favorites: z.number(),
+  cguAcceptedAt: z.string().nullable(),
+  cguVersion: z.string().nullable(),
 });
+
+export const cguConsentSchema = z.object({ accepted: z.boolean() });
 
 const optionalText = z.string().trim().max(255).nullish();
 

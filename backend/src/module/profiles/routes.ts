@@ -5,9 +5,11 @@ import {
   getJobseekerProfile,
   getOwnProfile,
   listJobseekerProfiles,
+  setCguConsent,
   updateOwnProfile,
 } from "./service";
 import {
+  cguConsentSchema,
   myProfileSchema,
   profileErrorSchema,
   profileIdParamSchema,
@@ -77,6 +79,27 @@ export async function profileRoutes(fastify: FastifyInstance) {
       }
 
       return reply.send(await updateOwnProfile(user.id, request.body));
+    },
+  );
+
+  typed.put(
+    "/api/me/cgu",
+    {
+      schema: {
+        tags: ["profiles"],
+        summary: "Accept or revoke the terms of use",
+        body: cguConsentSchema,
+        response: { 200: myProfileSchema, 401: profileErrorSchema },
+      },
+    },
+    async (request, reply) => {
+      const user = await getSessionUser(request);
+
+      if (!user) {
+        return reply.status(401).send({ error: "Non authentifié" });
+      }
+
+      return reply.send(await setCguConsent(user.id, request.body.accepted));
     },
   );
 
