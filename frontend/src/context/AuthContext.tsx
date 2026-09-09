@@ -39,6 +39,7 @@ function toRemotePatch(patch: Partial<JobseekerProfile>): MyProfilePatch {
   if (patch.title !== undefined) remote.title = patch.title || null;
   if (patch.sector !== undefined) remote.sector = patch.sector || null;
   if (patch.location !== undefined) remote.location = patch.location || null;
+  if (patch.availability !== undefined) remote.availability = patch.availability || null;
   if (patch.skills !== undefined) remote.skills = splitSkills(patch.skills);
 
   return remote;
@@ -135,6 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: remote?.title ?? "",
         sector: remote?.sector ?? "",
         location: remote?.location ?? "",
+        availability: remote?.availability ?? stored.availability ?? "",
         skills: joinSkills(remote?.skills ?? []),
         favorites: remote?.favorites ?? 0,
       };

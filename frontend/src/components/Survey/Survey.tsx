@@ -59,7 +59,8 @@ export function Questionnaire() {
     if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      updateJobseekerProfile({ certified: true });
+      const availability = answers["4"] ?? "";
+      void updateJobseekerProfile({ certified: true, availability });
       router.push("/profil");
     }
   };
