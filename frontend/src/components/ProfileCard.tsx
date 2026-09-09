@@ -8,6 +8,7 @@ import { useProfileInteractions } from "@/hooks/useProfileInteractions";
 import { isPlayable } from "@/lib/videos";
 import { VideoUnavailable } from "@/components/video/VideoUnavailable";
 import type { LoginPromptAction } from "@/components/LoginPromptModal";
+import { CertifiedBadge } from "@/components/Certif";
 
 interface ProfileCardProps {
   profile: Profile;
@@ -61,7 +62,7 @@ export function ProfileCard({ profile, onRequireLogin }: ProfileCardProps) {
       onRequireLogin("ajouter ce profil à vos favoris");
       return;
     }
-    toggleFavorite();
+    void toggleFavorite();
   };
 
   return (
@@ -110,11 +111,7 @@ export function ProfileCard({ profile, onRequireLogin }: ProfileCardProps) {
           )}
         </button>
 
-        {profile.certified && (
-          <span className="font-title absolute left-3 top-3 z-20 rounded-full bg-action px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-            Certifié
-          </span>
-        )}
+        {profile.certified && <CertifiedBadge className="absolute left-3 top-3 z-20" />}
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-4">
@@ -151,7 +148,7 @@ export function ProfileCard({ profile, onRequireLogin }: ProfileCardProps) {
                 : "border-border text-institutional hover:border-action"
             }`}
           >
-            {favorited ? "Enregistré" : "Favori"}
+            Favori
           </button>
           <Link
             href={`/profils/${profile.id}`}

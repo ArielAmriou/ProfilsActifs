@@ -10,6 +10,7 @@ import { BlockRole } from "@/components/RequireRole";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
+import { CertifiedBadge } from "@/components/Certif";
 import { fetchProfile, type Profile } from "@/lib/profiles-api";
 
 interface ProfileDetailPageProps {
@@ -75,11 +76,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
                     {profile.title}
                   </p>
                 </div>
-                {profile.certified && (
-                  <span className="font-title shrink-0 rounded-full bg-action px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-                    Certifié
-                  </span>
-                )}
+                {profile.certified && <CertifiedBadge className="shrink-0" />}
               </div>
 
               <div className="mt-6 w-fit overflow-hidden rounded-2xl border-2 border-border bg-institutional">

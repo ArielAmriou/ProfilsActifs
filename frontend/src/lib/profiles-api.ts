@@ -10,6 +10,7 @@ export interface Profile {
   skills: string[];
   certified: boolean;
   likes: number;
+  videoId: string | null;
   video: VideoDescriptor;
   subtitlesUrl?: string;
 }
@@ -25,6 +26,7 @@ interface ApiProfile {
   skills: string[];
   certified: boolean;
   favorites: number;
+  videoId: string | null;
   video: VideoDescriptor;
 }
 
@@ -45,6 +47,7 @@ function toProfile(profile: ApiProfile): Profile {
     skills: profile.skills,
     certified: profile.certified,
     likes: profile.favorites,
+    videoId: profile.videoId ?? null,
     video: profile.video ?? NO_VIDEO,
   };
 }
@@ -80,6 +83,8 @@ export interface MyProfile {
   skills: string[];
   certified: boolean;
   favorites: number;
+  cguAcceptedAt: string | null;
+  cguVersion: string | null;
 }
 
 export interface MyProfilePatch {
@@ -105,5 +110,12 @@ export function updateMyProfile(patch: MyProfilePatch): Promise<MyProfile> {
   return apiFetch<MyProfile>("/api/me/profile", {
     method: "PATCH",
     body: JSON.stringify(patch),
+  });
+}
+
+export function setCguConsent(accepted: boolean): Promise<MyProfile> {
+  return apiFetch<MyProfile>("/api/me/cgu", {
+    method: "PUT",
+    body: JSON.stringify({ accepted }),
   });
 }

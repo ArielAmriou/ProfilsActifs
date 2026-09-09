@@ -3,11 +3,21 @@
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
-export function HeaderBar() {
+interface HeaderBarProps {
+  /** Classes additionnelles (ex. position sous le bandeau candidat). */
+  className?: string;
+}
+
+export function HeaderBar({ className }: HeaderBarProps) {
   const { isAuthenticated, logout } = useAuth();
 
   return (
-    <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-end gap-3 px-4 py-4 lg:px-8">
+    <header
+      className={
+        className ??
+        "pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-end gap-3 px-4 py-4 lg:px-8"
+      }
+    >
       <div className="pointer-events-auto flex items-center gap-3">
         {isAuthenticated ? (
           <button

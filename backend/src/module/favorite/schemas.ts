@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const favoriteParamsSchema = z.object({
-  videoId: z.uuid(),
+  profileId: z.uuid(),
 });
 
 export const favoriteUserSchema = z.object({
