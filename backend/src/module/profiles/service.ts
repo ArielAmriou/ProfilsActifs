@@ -17,8 +17,10 @@ const SELECTION = {
   title: true,
   sector: true,
   location: true,
+  availability: true,
   skills: true,
   certified: true,
+  updatedAt: true,
   videos: {
     select: {
       id: true,
@@ -41,9 +43,11 @@ export interface PublicProfile {
   title: string | null;
   sector: string | null;
   location: string | null;
+  availability: string | null;
   skills: string[];
   certified: boolean;
   favorites: number;
+  updatedAt: string;
   videoId: string | null;
   video: VideoDescriptor;
 }
@@ -52,16 +56,20 @@ function findJobseekers() {
   return prisma.users.findMany({
     where: { role: "jobseeker", cguAcceptedAt: { not: null } },
     select: SELECTION,
-    orderBy: { createdAt: "asc" },
+    orderBy: [
+      { updatedAt: "desc" },
+      { favoritesReceived: { _count: "desc" } },
+    ],
   });
 }
 
 async function toPublicProfile(row: JobseekerRow): Promise<PublicProfile> {
-  const { videos, _count, ...user } = row;
+  const { videos, _count, updatedAt, ...user } = row;
 
   return {
     ...user,
     favorites: _count.favoritesReceived,
+    updatedAt: updatedAt.toISOString(),
     videoId: videos?.id ?? null,
     video: videos ? await describeVideo(videos) : NO_VIDEO,
   };
@@ -91,6 +99,7 @@ export interface OwnProfile {
   title: string | null;
   sector: string | null;
   location: string | null;
+  availability: string | null;
   skills: string[];
   certified: boolean;
   favorites: number;
@@ -106,6 +115,7 @@ export interface OwnProfilePatch {
   title?: string | null;
   sector?: string | null;
   location?: string | null;
+  availability?: string | null;
   skills?: string[];
 }
 
@@ -120,6 +130,7 @@ const OWN_SELECTION = {
   title: true,
   sector: true,
   location: true,
+  availability: true,
   skills: true,
   certified: true,
   cguAcceptedAt: true,
