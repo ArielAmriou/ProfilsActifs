@@ -5,7 +5,7 @@ import { CandidateDisclaimerBanner } from "@/components/CandidateDisclaimerBanne
 import { HeaderBar } from "@/components/HeaderBar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { RequireRole } from "@/components/RequireRole";
-import { Questionnaire } from "@/components/Survey/Survey";
+import { Questionnaire } from "@/components/survey/Survey";
 import { PageLayout } from "@/components/layout/PageLayout";
 
 export default function QuestionnairePage() {

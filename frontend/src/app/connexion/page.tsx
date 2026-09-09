@@ -375,7 +375,7 @@ export default function ConnexionPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-[100dvh] items-center justify-center bg-content-bg">
+        <div className="flex min-h-dvh items-center justify-center bg-content-bg">
           <p className="text-institutional" role="status">
             Chargement…
           </p>
