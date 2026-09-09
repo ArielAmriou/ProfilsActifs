@@ -23,6 +23,7 @@ export interface JobseekerProfile {
   title: string;
   sector: string;
   location: string;
+  availability: string;
   skills: string;
   likes: number;
   favorites: number;
@@ -42,6 +43,7 @@ export const DEFAULT_JOBSEEKER_PROFILE: JobseekerProfile = {
   title: "",
   sector: "",
   location: "",
+  availability: "",
   skills: "",
   likes: 0,
   favorites: 0,
