@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { AdminClientLayout } from "./AdminClientLayout";
 
 export const metadata: Metadata = {
-  title: "Section Administrateur",
+  title: "Administration | ProfilsActifs",
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <AdminClientLayout>{children}</AdminClientLayout>;
 }
