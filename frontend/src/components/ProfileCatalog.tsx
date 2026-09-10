@@ -85,10 +85,10 @@ export function ProfileCatalog() {
 
   return (
     <section
-      className="mx-auto w-full max-w-7xl px-4 pb-28 pt-20 sm:px-6"
+      className="mx-auto w-full max-w-7xl px-4 pb-28 pt-12 sm:px-6"
       aria-labelledby="catalog-heading"
     >
-      <div className="mb-6">
+      <div className="mb-4">
         <h2 id="catalog-heading" className="font-title text-2xl font-bold text-institutional">
           Catalogue de profils
         </h2>
