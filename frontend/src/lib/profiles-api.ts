@@ -104,6 +104,7 @@ export interface MyProfilePatch {
   location?: string | null;
   availability?: string | null;
   skills?: string[];
+  certified?: boolean;
 }
 
 export async function fetchMyProfile(): Promise<MyProfile | null> {

@@ -9,7 +9,8 @@ import { RequireRole } from "@/components/RequireRole";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuth } from "@/context/AuthContext";
-import { fetchFavorites, type FavoriteItem } from "@/lib/favorites-api";
+import { fetchFavorites, removeFavorite, type FavoriteItem } from "@/lib/favorites-api";
+import { readInteractions, writeInteractions } from "@/lib/interactions";
 import { ViewProfileButton } from "@/components/ViewProfileButton";
 import { CertifiedBadge } from "@/components/Certif";
 import { fetchProfiles, type Profile } from "@/lib/profiles-api";
@@ -17,10 +18,38 @@ import { fetchProfiles, type Profile } from "@/lib/profiles-api";
 function FavoriteCard({
   item,
   profile,
+  email,
+  onRemoved,
 }: {
   item: FavoriteItem;
   profile: Profile | null;
+  email: string | null;
+  onRemoved: (profileId: string) => void;
 }) {
+  const [removing, setRemoving] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleRemove = async () => {
+    setRemoving(true);
+    setError(false);
+    try {
+      await removeFavorite(item.id);
+      if (email) {
+        const all = readInteractions(email);
+        all[item.id] = {
+          liked: all[item.id]?.liked ?? false,
+          likeCount: all[item.id]?.likeCount ?? profile?.likes ?? 0,
+          favorited: false,
+        };
+        writeInteractions(email, all);
+      }
+      onRemoved(item.id);
+    } catch {
+      setError(true);
+      setRemoving(false);
+    }
+  };
+
   if (!item.available) {
     return (
       <article className="rounded-2xl border-2 border-dashed border-border bg-content-bg p-5">
@@ -28,9 +57,23 @@ function FavoriteCard({
         <p className="mt-2 text-sm text-institutional/75">
           Ce candidat a masqué son profil. Il n&apos;est plus consultable.
         </p>
-        <div className="mt-5">
+        <div className="mt-5 flex flex-wrap gap-3">
           <ViewProfileButton profileId={item.id} />
+          <button
+            type="button"
+            onClick={() => void handleRemove()}
+            disabled={removing}
+            aria-label="Retirer ce profil des favoris"
+            className="font-title ml-auto inline-flex items-center justify-center rounded-lg border-2 border-border px-4 py-2 text-sm font-bold text-institutional transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {removing ? "Retrait…" : "Retirer des favoris"}
+          </button>
         </div>
+        {error && (
+          <p role="alert" className="mt-3 text-sm text-red-800">
+            Impossible de retirer ce profil des favoris pour le moment.
+          </p>
+        )}
       </article>
     );
   }
@@ -79,7 +122,22 @@ function FavoriteCard({
         >
           Voir dans le fil
         </Link>
+        <button
+          type="button"
+          onClick={() => void handleRemove()}
+          disabled={removing}
+          aria-label={`Retirer ${name} des favoris`}
+          className="font-title ml-auto inline-flex items-center justify-center rounded-lg border-2 border-border px-4 py-2 text-sm font-bold text-institutional transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {removing ? "Retrait…" : "Retirer des favoris"}
+        </button>
       </div>
+
+      {error && (
+        <p role="alert" className="mt-3 text-sm text-red-800">
+          Impossible de retirer ce profil des favoris pour le moment.
+        </p>
+      )}
     </article>
   );
 }
@@ -102,6 +160,10 @@ export default function FavorisPage() {
       active = false;
     };
   }, [email]);
+
+  const handleRemoved = (profileId: string) => {
+    setItems((current) => current.filter((item) => item.id !== profileId));
+  };
 
   return (
     <>
@@ -136,6 +198,8 @@ export default function FavorisPage() {
                       key={item.id}
                       item={item}
                       profile={profilesById.get(item.id) ?? null}
+                      email={email}
+                      onRemoved={handleRemoved}
                     />
                   ))}
                 </div>
