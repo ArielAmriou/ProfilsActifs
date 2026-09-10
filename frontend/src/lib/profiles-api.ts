@@ -126,6 +126,7 @@ export interface MyProfilePatch {
   location?: string | null;
   availability?: string | null;
   skills?: string[];
+  certified?: boolean;
   profileHidden?: boolean;
 }
 
