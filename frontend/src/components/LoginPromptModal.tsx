@@ -81,7 +81,7 @@ export function LoginPromptModal({ actionLabel, onClose }: LoginPromptModalProps
         </h2>
 
         <p id="login-prompt-description" className="mt-3 text-sm leading-relaxed text-institutional/85">
-          Vous devez être connecté pour {actionLabel}. Connectez-vous à ProfilsActifs pour
+          Vous devez être connecté pour {actionLabel}. Connectez-vous à Compétences+ pour
           continuer.
         </p>
 

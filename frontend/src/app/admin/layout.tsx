@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AdminClientLayout } from "./AdminClientLayout";
 
 export const metadata: Metadata = {
-  title: "Administration | ProfilsActifs",
+  title: "Administration | Compétences+",
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
