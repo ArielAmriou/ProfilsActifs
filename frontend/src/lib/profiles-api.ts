@@ -67,42 +67,33 @@ export async function fetchProfiles(): Promise<Profile[]> {
   }
 }
 
-export async function fetchProfile(id: string): Promise<Profile | null> {
+export type ProfileFetchResult =
+  | { status: "ok"; profile: Profile }
+  | { status: "hidden" }
+  | { status: "missing" };
+
+export async function fetchProfileResult(id: string): Promise<ProfileFetchResult> {
   try {
-    return toProfile(await apiFetch<ApiProfile>(`/api/profiles/${id}`));
+    return { status: "ok", profile: toProfile(await apiFetch<ApiProfile>(`/api/profiles/${id}`)) };
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
-      return null;
+      const body = error.body as { code?: string; error?: string } | null;
+      if (
+        body?.code === "PROFILE_HIDDEN" ||
+        (typeof body?.error === "string" && body.error.toLowerCase().includes("indisponible")) ||
+        error.message.toLowerCase().includes("indisponible")
+      ) {
+        return { status: "hidden" };
+      }
+      return { status: "missing" };
     }
-    return null;
+    return { status: "missing" };
   }
 }
 
-/** Distingue un profil caché d'un profil vraiment introuvable. */
-export async function fetchProfileAccess(
-  id: string,
-): Promise<"ok" | "hidden" | "missing"> {
-  try {
-    await apiFetch<ApiProfile>(`/api/profiles/${id}`);
-    return "ok";
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 404) {
-      const body = error.body;
-      if (
-        body &&
-        typeof body === "object" &&
-        (body as { code?: string }).code === "PROFILE_HIDDEN"
-      ) {
-        return "hidden";
-      }
-      const message = error.message.toLowerCase();
-      if (message.includes("indisponible")) {
-        return "hidden";
-      }
-      return "missing";
-    }
-    return "missing";
-  }
+export async function fetchProfile(id: string): Promise<Profile | null> {
+  const result = await fetchProfileResult(id);
+  return result.status === "ok" ? result.profile : null;
 }
 
 export interface MyProfile {

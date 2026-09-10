@@ -21,7 +21,10 @@ export async function removeFavorite(profileId: string): Promise<void> {
 export async function fetchFavorites(): Promise<FavoriteItem[]> {
   try {
     const data = await apiFetch<{ items: FavoriteItem[] }>("/api/favorites");
-    return data.items;
+    return data.items.map((item) => ({
+      ...item,
+      available: item.available ?? true,
+    }));
   } catch {
     return [];
   }
