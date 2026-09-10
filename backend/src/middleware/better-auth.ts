@@ -1,8 +1,10 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { openAPI } from "better-auth/plugins";
+import { APIError } from "better-auth/api";
 import { prisma } from "../lib/prisma";
 import { CGU_VERSION } from "../config/cgu";
+import { isOfLegalWorkAge, UNDERAGE_MESSAGE } from "../lib/age";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -32,6 +34,7 @@ export const auth = betterAuth({
       lastname: { type: "string", required: true, returned: true },
       role: { type: "string", required: true, returned: true },
       birthdate: { type: "date", required: true, returned: true },
+      organization: { type: "string", required: false, returned: true },
       cguAcceptedAt: { type: "date", required: false, returned: true },
       cguVersion: { type: "string", required: false, returned: true },
     },
@@ -44,8 +47,40 @@ export const auth = betterAuth({
             return false;
           }
 
+          const birthdate =
+            user.birthdate instanceof Date
+              ? user.birthdate
+              : user.birthdate
+                ? new Date(String(user.birthdate))
+                : null;
+
+          if (!birthdate || Number.isNaN(birthdate.getTime())) {
+            throw new APIError("BAD_REQUEST", {
+              message: "La date de naissance est obligatoire.",
+            });
+          }
+
+          if (!isOfLegalWorkAge(birthdate)) {
+            throw new APIError("BAD_REQUEST", { message: UNDERAGE_MESSAGE });
+          }
+
+          const role = String(user.role ?? "");
+          const organization =
+            typeof user.organization === "string" ? user.organization.trim() : "";
+
+          if (role === "recruiter" && !organization) {
+            throw new APIError("BAD_REQUEST", {
+              message: "L'organisation est obligatoire pour un compte recruteur.",
+            });
+          }
+
           return {
-            data: { ...user, cguAcceptedAt: new Date(), cguVersion: CGU_VERSION },
+            data: {
+              ...user,
+              organization: role === "recruiter" ? organization : null,
+              cguAcceptedAt: new Date(),
+              cguVersion: CGU_VERSION,
+            },
           };
         },
       },

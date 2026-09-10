@@ -1,0 +1,7 @@
+date: 2026-09-10T10:31:13+02:00
+cpu: AMD Ryzen 7 7735U with Radeon Graphics
+coeurs: 16
+ram: 14Gi
+kernel: 6.14.0-37-generic
+docker: Docker version 29.8.0, build 88096ef
+k6: k6 v2.2.0 (commit/00a9a1b7f5, go1.26.5, linux/amd64)

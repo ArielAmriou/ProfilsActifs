@@ -1,6 +1,6 @@
-export class FavoriteVideoNotFoundError extends Error {
-  constructor(videoId: string) {
-    super(`No video found for identifier: ${videoId}`);
-    this.name = "FavoriteVideoNotFoundError";
+export class FavoriteProfileNotFoundError extends Error {
+  constructor(profileId: string) {
+    super(`No jobseeker profile found for identifier: ${profileId}`);
+    this.name = "FavoriteProfileNotFoundError";
   }
 }

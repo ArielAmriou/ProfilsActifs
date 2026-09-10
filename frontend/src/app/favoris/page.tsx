@@ -11,9 +11,44 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import type { Profile } from "@/lib/profiles-api";
 import { useAuth } from "@/context/AuthContext";
 import { getFavoritedProfiles } from "@/lib/favorites";
+import { removeFavorite } from "@/lib/favorites-api";
+import { readInteractions, writeInteractions } from "@/lib/interactions";
 import { ViewProfileButton } from "@/components/ViewProfileButton";
+import { CertifiedBadge } from "@/components/Certif";
 
-function FavoriteCard({ profile }: { profile: Profile }) {
+function FavoriteCard({
+  profile,
+  email,
+  onRemoved,
+}: {
+  profile: Profile;
+  email: string | null;
+  onRemoved: (profileId: string) => void;
+}) {
+  const [removing, setRemoving] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleRemove = async () => {
+    setRemoving(true);
+    setError(false);
+    try {
+      await removeFavorite(profile.id);
+      if (email) {
+        const all = readInteractions(email);
+        all[profile.id] = {
+          liked: all[profile.id]?.liked ?? false,
+          likeCount: all[profile.id]?.likeCount ?? profile.likes,
+          favorited: false,
+        };
+        writeInteractions(email, all);
+      }
+      onRemoved(profile.id);
+    } catch {
+      setError(true);
+      setRemoving(false);
+    }
+  };
+
   return (
     <article className="rounded-2xl border-2 border-border bg-surface p-5">
       <div className="flex items-start justify-between gap-3">
@@ -23,11 +58,7 @@ function FavoriteCard({ profile }: { profile: Profile }) {
             {profile.title}
           </p>
         </div>
-        {profile.certified && (
-          <span className="font-title shrink-0 rounded-full bg-action px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-            Certifié
-          </span>
-        )}
+        {profile.certified && <CertifiedBadge className="shrink-0" />}
       </div>
 
       <dl className="mt-4 space-y-1 text-sm text-institutional/85">
@@ -62,7 +93,22 @@ function FavoriteCard({ profile }: { profile: Profile }) {
         >
           Voir dans le fil
         </Link>
+        <button
+          type="button"
+          onClick={() => void handleRemove()}
+          disabled={removing}
+          aria-label={`Retirer ${profile.name} des favoris`}
+          className="font-title ml-auto inline-flex items-center justify-center rounded-lg border-2 border-border px-4 py-2 text-sm font-bold text-institutional transition hover:border-action hover:text-action disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {removing ? "Retrait…" : "Retirer des favoris"}
+        </button>
       </div>
+
+      {error && (
+        <p role="alert" className="mt-3 text-sm text-red-800">
+          Impossible de retirer ce profil des favoris pour le moment.
+        </p>
+      )}
     </article>
   );
 }
@@ -84,6 +130,10 @@ export default function FavorisPage() {
       active = false;
     };
   }, [email]);
+
+  const handleRemoved = (profileId: string) => {
+    setFavorites((current) => current.filter((profile) => profile.id !== profileId));
+  };
 
   return (
     <>
@@ -114,7 +164,12 @@ export default function FavorisPage() {
               ) : (
                 <div className="mt-8 grid gap-4">
                   {favorites.map((profile) => (
-                    <FavoriteCard key={profile.id} profile={profile} />
+                    <FavoriteCard
+                      key={profile.id}
+                      profile={profile}
+                      email={email}
+                      onRemoved={handleRemoved}
+                    />
                   ))}
                 </div>
               )}

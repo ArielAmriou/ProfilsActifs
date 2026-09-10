@@ -3,8 +3,21 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { getSessionUser } from "../../middleware/session";
 import { registerClient } from "./registry";
-import { getNotificationsSince } from "./service";
-import { notificationErrorSchema, notificationStreamQuerySchema } from "./schemas";
+import {
+  countUnreadNotifications,
+  deleteNotificationForUser,
+  getNotificationsSince,
+  listNotificationsForUser,
+  markAllNotificationsRead,
+} from "./service";
+import {
+  notificationErrorSchema,
+  notificationIdParamSchema,
+  notificationListSchema,
+  notificationMutationSchema,
+  notificationStreamQuerySchema,
+  notificationUnreadCountSchema,
+} from "./schemas";
 
 const HEARTBEAT_MS = 20_000;
 
@@ -16,6 +29,109 @@ function corsHeaders(reply: FastifyReply): OutgoingHttpHeaders {
 
 export async function notificationRoutes(fastify: FastifyInstance) {
   const typed = fastify.withTypeProvider<ZodTypeProvider>();
+
+  typed.get(
+    "/api/notifications",
+    {
+      schema: {
+        tags: ["notifications"],
+        summary: "List notifications for the current user",
+        description:
+          "Retourne les notifications du destinataire connecté, les plus récentes en premier.",
+        response: {
+          200: notificationListSchema,
+          401: notificationErrorSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const user = await getSessionUser(request);
+
+      if (!user) {
+        return reply.status(401).send({ error: "Non authentifié" });
+      }
+
+      const notifications = await listNotificationsForUser(user.id);
+      return reply.send({ notifications });
+    },
+  );
+
+  typed.get(
+    "/api/notifications/unread-count",
+    {
+      schema: {
+        tags: ["notifications"],
+        summary: "Unread notifications count",
+        response: {
+          200: notificationUnreadCountSchema,
+          401: notificationErrorSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const user = await getSessionUser(request);
+
+      if (!user) {
+        return reply.status(401).send({ error: "Non authentifié" });
+      }
+
+      return reply.send({ count: await countUnreadNotifications(user.id) });
+    },
+  );
+
+  typed.post(
+    "/api/notifications/read",
+    {
+      schema: {
+        tags: ["notifications"],
+        summary: "Mark all notifications as read",
+        response: {
+          200: notificationMutationSchema,
+          401: notificationErrorSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const user = await getSessionUser(request);
+
+      if (!user) {
+        return reply.status(401).send({ error: "Non authentifié" });
+      }
+
+      const count = await markAllNotificationsRead(user.id);
+      return reply.send({ ok: true, count });
+    },
+  );
+
+  typed.delete(
+    "/api/notifications/:id",
+    {
+      schema: {
+        tags: ["notifications"],
+        summary: "Delete a notification",
+        params: notificationIdParamSchema,
+        response: {
+          200: notificationMutationSchema,
+          401: notificationErrorSchema,
+          404: notificationErrorSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const user = await getSessionUser(request);
+
+      if (!user) {
+        return reply.status(401).send({ error: "Non authentifié" });
+      }
+
+      const deleted = await deleteNotificationForUser(user.id, request.params.id);
+      if (!deleted) {
+        return reply.status(404).send({ error: "Notification introuvable" });
+      }
+
+      return reply.send({ ok: true });
+    },
+  );
 
   typed.get(
     "/api/notifications/stream",

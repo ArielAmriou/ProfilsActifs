@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { getSessionUser } from "../../middleware/session";
-import { publishNotification } from "../notifications/service";
+import { publishNotificationOncePerActor } from "../notifications/service";
 import {
   getJobseekerProfile,
   getOwnProfile,
@@ -69,7 +69,11 @@ export async function profileRoutes(fastify: FastifyInstance) {
         tags: ["profiles"],
         summary: "Update the profile of the current user",
         body: updateMyProfileSchema,
-        response: { 200: myProfileSchema, 401: profileErrorSchema },
+        response: {
+          200: myProfileSchema,
+          400: profileErrorSchema,
+          401: profileErrorSchema,
+        },
       },
     },
     async (request, reply) => {
@@ -79,7 +83,12 @@ export async function profileRoutes(fastify: FastifyInstance) {
         return reply.status(401).send({ error: "Non authentifié" });
       }
 
-      return reply.send(await updateOwnProfile(user.id, request.body));
+      try {
+        return reply.send(await updateOwnProfile(user.id, request.body));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Mise à jour impossible";
+        return reply.status(400).send({ error: message });
+      }
     },
   );
 
@@ -124,7 +133,7 @@ export async function profileRoutes(fastify: FastifyInstance) {
       const viewer = await getSessionUser(request);
 
       if (viewer && viewer.role === "recruiter" && viewer.id !== profile.id) {
-        await publishNotification({
+        await publishNotificationOncePerActor({
           recipientId: profile.id,
           actorId: viewer.id,
           type: "PROFILE_VIEWED",

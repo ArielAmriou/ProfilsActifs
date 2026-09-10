@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { getSessionUser } from "../../middleware/session";
-import { FavoriteVideoNotFoundError } from "./errors";
+import { FavoriteProfileNotFoundError } from "./errors";
 import { deleteFavorite, getFavorites, setFavorite } from "./service";
 import {
   favoriteDeletionSchema,
@@ -15,11 +15,11 @@ export async function favoriteRoutes(fastify: FastifyInstance) {
   const typed = fastify.withTypeProvider<ZodTypeProvider>();
 
   typed.post(
-    "/api/favorites/:videoId",
+    "/api/favorites/:profileId",
     {
       schema: {
         tags: ["favorite"],
-        summary: "Add a video's owner to the current recruiter's favorites",
+        summary: "Add a jobseeker profile to the current recruiter's favorites",
         params: favoriteParamsSchema,
         response: {
           201: favoriteUserSchema,
@@ -41,11 +41,11 @@ export async function favoriteRoutes(fastify: FastifyInstance) {
       }
 
       try {
-        const favorite = await setFavorite(user.id, request.params.videoId);
+        const favorite = await setFavorite(user.id, request.params.profileId);
         return reply.status(201).send(favorite);
       } catch (error) {
-        if (error instanceof FavoriteVideoNotFoundError) {
-          return reply.status(404).send({ error: "Vidéo introuvable" });
+        if (error instanceof FavoriteProfileNotFoundError) {
+          return reply.status(404).send({ error: "Profil introuvable" });
         }
         throw error;
       }
@@ -77,11 +77,11 @@ export async function favoriteRoutes(fastify: FastifyInstance) {
   );
 
   typed.delete(
-    "/api/favorites/:videoId",
+    "/api/favorites/:profileId",
     {
       schema: {
         tags: ["favorite"],
-        summary: "Remove a video's owner from the current recruiter's favorites",
+        summary: "Remove a jobseeker profile from the current recruiter's favorites",
         params: favoriteParamsSchema,
         response: {
           200: favoriteDeletionSchema,
@@ -101,7 +101,7 @@ export async function favoriteRoutes(fastify: FastifyInstance) {
         return reply.status(403).send({ error: "Réservé aux recruteurs" });
       }
 
-      return reply.send({ deleted: await deleteFavorite(user.id, request.params.videoId) });
+      return reply.send({ deleted: await deleteFavorite(user.id, request.params.profileId) });
     },
   );
 }

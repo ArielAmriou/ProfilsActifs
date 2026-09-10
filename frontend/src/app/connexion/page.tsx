@@ -7,6 +7,8 @@ import { ConnexionSidebar } from "@/components/AppSidebar";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuth } from "@/context/AuthContext";
+import { FrenchDateInput } from "@/components/FrenchDateInput";
+import { isOfLegalWorkAge, parseIsoDateLocal, UNDERAGE_MESSAGE } from "@/lib/age";
 import { getHomeForRole, type UserRole } from "@/types/auth";
 
 type AuthMode = "login" | "register";
@@ -84,6 +86,7 @@ function AuthForm() {
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [birthdate, setBirthdate] = useState("");
+  const [organization, setOrganization] = useState("");
   const [cguAccepted, setCguAccepted] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>("recruiter");
   const [error, setError] = useState("");
@@ -116,8 +119,21 @@ function AuthForm() {
       return;
     }
 
-    if (mode === "register" && !birthdate.trim()) {
-      setError("La date de naissance est obligatoire.");
+    if (mode === "register" && !/^\d{4}-\d{2}-\d{2}$/.test(birthdate.trim())) {
+      setError("La date de naissance doit être au format JJ/MM/AAAA.");
+      return;
+    }
+
+    if (mode === "register") {
+      const birth = parseIsoDateLocal(birthdate);
+      if (!birth || !isOfLegalWorkAge(birth)) {
+        setError(UNDERAGE_MESSAGE);
+        return;
+      }
+    }
+
+    if (mode === "register" && selectedRole === "recruiter" && !organization.trim()) {
+      setError("L'organisation est obligatoire pour un compte recruteur.");
       return;
     }
 
@@ -137,6 +153,7 @@ function AuthForm() {
               firstname,
               lastname,
               birthdate,
+              organization: selectedRole === "recruiter" ? organization : undefined,
               cguAccepted,
             });
 
@@ -297,19 +314,37 @@ function AuthForm() {
               </div>
             )}
 
+            {mode === "register" && selectedRole === "recruiter" && (
+              <div>
+                <label htmlFor="organization" className="font-title block text-sm font-bold">
+                  Organisation
+                </label>
+                <input
+                  id="organization"
+                  name="organization"
+                  type="text"
+                  autoComplete="organization"
+                  required
+                  value={organization}
+                  onChange={(event) => setOrganization(event.target.value)}
+                  className={inputClassName}
+                  placeholder="Nom de votre organisation"
+                />
+              </div>
+            )}
+
             {mode === "register" && (
               <div>
                 <label htmlFor="birthdate" className="font-title block text-sm font-bold">
                   Date de naissance
                 </label>
-                <input
+                <FrenchDateInput
                   id="birthdate"
                   name="birthdate"
-                  type="date"
                   autoComplete="bday"
                   required
                   value={birthdate}
-                  onChange={(event) => setBirthdate(event.target.value)}
+                  onChange={setBirthdate}
                   className={inputClassName}
                 />
               </div>
@@ -375,7 +410,7 @@ export default function ConnexionPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-[100dvh] items-center justify-center bg-content-bg">
+        <div className="flex min-h-dvh items-center justify-center bg-content-bg">
           <p className="text-institutional" role="status">
             Chargement…
           </p>

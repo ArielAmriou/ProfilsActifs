@@ -13,10 +13,12 @@ import {
   deleteMyVideo,
   fetchMyVideo,
   hasNoVideo,
+  isPendingValidation,
   uploadMyVideo,
   NO_VIDEO,
   type VideoDescriptor,
 } from "@/lib/videos";
+import { PendingValidationBadge } from "@/components/PendingValidationBadge";
 
 const buttonClassName =
   "font-title rounded-lg px-4 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50";
@@ -45,7 +47,7 @@ export default function MaVideoPage() {
 
     try {
       setVideo(await uploadMyVideo(file));
-      setNotice("Vidéo enregistrée.");
+      setNotice("Vidéo envoyée. Elle est en cours de validation par un administrateur.");
     } catch (uploadError) {
       setError(
         uploadError instanceof Error
@@ -77,8 +79,8 @@ export default function MaVideoPage() {
     <>
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
         <RequireRole allowed={["jobseeker"]}>
-          <HeaderBar />
           <CandidateDisclaimerBanner />
+          <HeaderBar className="pointer-events-none relative z-30 flex items-center justify-end gap-3 px-4 py-3 lg:px-8" />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
               <h1 className="font-title text-2xl font-bold text-institutional">Ma vidéo</h1>
@@ -130,14 +132,24 @@ export default function MaVideoPage() {
               </div>
 
               <div className="mt-8">
-                <h2 className="font-title text-sm font-bold text-institutional">Aperçu</h2>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="font-title text-sm font-bold text-institutional">Aperçu</h2>
+                  {isPendingValidation(video) && <PendingValidationBadge />}
+                </div>
                 <div className="mt-3 w-fit overflow-hidden rounded-2xl border-2 border-border bg-institutional">
                   <VideoPlayer
                     video={video}
                     label="Aperçu de ma vidéo de présentation"
                     className="aspect-[9/16] h-auto w-48 object-cover sm:w-56"
+                    allowPendingPreview
                   />
                 </div>
+                {isPendingValidation(video) && (
+                  <p className="mt-3 max-w-md text-sm text-institutional/75">
+                    Votre vidéo n&apos;apparaîtra dans le catalogue qu&apos;après validation
+                    par un administrateur.
+                  </p>
+                )}
               </div>
             </ContentCard>
           </div>

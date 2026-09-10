@@ -2,6 +2,8 @@ import Link from "next/link";
 
 interface BrandBlockProps {
   className?: string;
+  /** Si false, le bloc marque n'est pas un lien (ex. espace admin). */
+  link?: boolean;
 }
 
 function RobotIcon({ className = "" }: { className?: string }) {
@@ -17,31 +19,36 @@ function RobotIcon({ className = "" }: { className?: string }) {
   );
 }
 
-export function BrandBlock({ className = "" }: BrandBlockProps) {
+function BrandMark() {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border-2 border-border bg-surface px-4 py-3">
+      <span
+        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-institutional text-white"
+        aria-hidden="true"
+      >
+        <RobotIcon className="size-6" />
+      </span>
+      <p className="font-title text-xl font-bold text-institutional">ProfilsActifs</p>
+    </div>
+  );
+}
+
+export function BrandBlock({ className = "", link = true }: BrandBlockProps) {
+  if (!link) {
+    return (
+      <div className={className} aria-label="ProfilsActifs">
+        <BrandMark />
+      </div>
+    );
+  }
+
   return (
     <Link
       href="/"
       className={`block no-underline ${className}`}
       aria-label="ProfilsActifs — Accueil"
     >
-      {/*
-        Ancien bloc-marque Ministère (conservé pour rollback) :
-        <div className="rounded-lg border-2 border-border bg-surface px-4 py-3" aria-hidden="true">
-          <p className="font-title text-xs font-bold uppercase tracking-wide text-institutional">
-            Ministère du Job et Bonheur
-          </p>
-          <p className="font-title mt-1 text-xl font-bold text-institutional">ProfilsActifs</p>
-        </div>
-      */}
-      <div className="flex items-center gap-3 rounded-lg border-2 border-border bg-surface px-4 py-3">
-        <span
-          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-institutional text-white"
-          aria-hidden="true"
-        >
-          <RobotIcon className="size-6" />
-        </span>
-        <p className="font-title text-xl font-bold text-institutional">ProfilsActifs</p>
-      </div>
+      <BrandMark />
     </Link>
   );
 }

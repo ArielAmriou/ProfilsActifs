@@ -8,9 +8,10 @@ import {
   writeInteractions,
   type InteractionState,
 } from "@/lib/interactions";
+import { addFavorite, removeFavorite } from "@/lib/favorites-api";
 
 export function useProfileInteractions(profileId: string, initialLikes: number) {
-  const { isAuthenticated, email } = useAuth();
+  const { isAuthenticated, email, role } = useAuth();
   const [state, setState] = useState<InteractionState>(() =>
     getDefaultInteractionState(initialLikes),
   );
@@ -52,26 +53,34 @@ export function useProfileInteractions(profileId: string, initialLikes: number) 
     return next.liked;
   }, [email, isAuthenticated, persist, state]);
 
-  const toggleFavorite = useCallback(() => {
+  const toggleFavorite = useCallback(async () => {
     if (!isAuthenticated || !email) {
       return false;
     }
 
-    const next: InteractionState = {
-      ...state,
-      favorited: !state.favorited,
-    };
-    persist(next);
-    return next.favorited;
-  }, [email, isAuthenticated, persist, state]);
+    const nextFavorited = !state.favorited;
+    const previous = state;
+    persist({ ...state, favorited: nextFavorited });
 
-  const visibleLiked = isAuthenticated && state.liked;
-  const visibleFavorited = isAuthenticated && state.favorited;
+    if (role === "recruiter") {
+      try {
+        if (nextFavorited) {
+          await addFavorite(profileId);
+        } else {
+          await removeFavorite(profileId);
+        }
+      } catch {
+        persist(previous);
+        return previous.favorited;
+      }
+    }
+
+    return nextFavorited;
+  }, [email, isAuthenticated, persist, profileId, role, state]);
 
   return {
-    liked: visibleLiked,
-    favorited: visibleFavorited,
-    // Compteur conservé en local pour usage futur (stockage DB) — jamais exposé à l'UI.
+    liked: isAuthenticated && state.liked,
+    favorited: isAuthenticated && state.favorited,
     likeCount: state.likeCount,
     showLikeCount: false,
     toggleLike,

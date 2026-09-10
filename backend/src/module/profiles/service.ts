@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { CGU_VERSION } from "../../config/cgu";
+import { isOfLegalWorkAge, UNDERAGE_MESSAGE } from "../../lib/age";
 import { describeVideo, type VideoDescriptor } from "../video/service";
 
 const NO_VIDEO: VideoDescriptor = {
@@ -17,17 +18,20 @@ const SELECTION = {
   title: true,
   sector: true,
   location: true,
+  availability: true,
   skills: true,
   certified: true,
+  updatedAt: true,
   videos: {
     select: {
+      id: true,
       providerName: true,
       providerId: true,
       status: true,
       size: true,
-      _count: { select: { favorites: true } },
     },
   },
+  _count: { select: { favoritesReceived: true } },
 } as const;
 
 type JobseekerRow = Awaited<ReturnType<typeof findJobseekers>>[number];
@@ -40,37 +44,84 @@ export interface PublicProfile {
   title: string | null;
   sector: string | null;
   location: string | null;
+  availability: string | null;
   skills: string[];
   certified: boolean;
   favorites: number;
+  updatedAt: string;
+  videoId: string | null;
   video: VideoDescriptor;
 }
 
 function findJobseekers() {
   return prisma.users.findMany({
-    where: { role: "jobseeker", cguAcceptedAt: { not: null } },
+    where: {
+      role: "jobseeker",
+      cguAcceptedAt: { not: null },
+      // Catalogue public : uniquement les profils dont la vidéo a été validée.
+      videos: { is: { status: "READY" } },
+    },
     select: SELECTION,
-    orderBy: { createdAt: "asc" },
+    orderBy: [
+      { updatedAt: "desc" },
+      { favoritesReceived: { _count: "desc" } },
+    ],
   });
 }
 
 async function toPublicProfile(row: JobseekerRow): Promise<PublicProfile> {
-  const { videos, ...user } = row;
+  const { videos, _count, updatedAt, ...user } = row;
 
   return {
     ...user,
-    favorites: videos?._count.favorites ?? 0,
+    favorites: _count.favoritesReceived,
+    updatedAt: updatedAt.toISOString(),
+    videoId: videos?.id ?? null,
     video: videos ? await describeVideo(videos) : NO_VIDEO,
   };
 }
 
-export async function listJobseekerProfiles(): Promise<PublicProfile[]> {
+const CATALOGUE_TTL_MS = Number(process.env.PROFILES_CACHE_TTL_MS ?? 5000);
+
+let catalogue: { expiresAt: number; profiles: PublicProfile[] } | null = null;
+let inFlight: Promise<PublicProfile[]> | null = null;
+
+async function buildCatalogue(): Promise<PublicProfile[]> {
   return Promise.all((await findJobseekers()).map(toPublicProfile));
+}
+
+export function invalidateCatalogue(): void {
+  catalogue = null;
+}
+
+export async function listJobseekerProfiles(): Promise<PublicProfile[]> {
+  if (catalogue && catalogue.expiresAt > Date.now()) {
+    return catalogue.profiles;
+  }
+
+  if (inFlight) {
+    return inFlight;
+  }
+
+  inFlight = buildCatalogue();
+
+  try {
+    const profiles = await inFlight;
+    catalogue = { expiresAt: Date.now() + CATALOGUE_TTL_MS, profiles };
+    return profiles;
+  } finally {
+    inFlight = null;
+  }
 }
 
 export async function getJobseekerProfile(id: string): Promise<PublicProfile | null> {
   const row = await prisma.users.findFirst({
-    where: { id, role: "jobseeker", cguAcceptedAt: { not: null } },
+    where: {
+      id,
+      role: "jobseeker",
+      cguAcceptedAt: { not: null },
+      videos: { is: { status: "READY" } },
+    },
     select: SELECTION,
   });
 
@@ -88,6 +139,7 @@ export interface OwnProfile {
   title: string | null;
   sector: string | null;
   location: string | null;
+  availability: string | null;
   skills: string[];
   certified: boolean;
   favorites: number;
@@ -103,6 +155,7 @@ export interface OwnProfilePatch {
   title?: string | null;
   sector?: string | null;
   location?: string | null;
+  availability?: string | null;
   skills?: string[];
 }
 
@@ -117,11 +170,12 @@ const OWN_SELECTION = {
   title: true,
   sector: true,
   location: true,
+  availability: true,
   skills: true,
   certified: true,
   cguAcceptedAt: true,
   cguVersion: true,
-  videos: { select: { _count: { select: { favorites: true } } } },
+  _count: { select: { favoritesReceived: true } },
 } as const;
 
 type OwnRow = NonNullable<Awaited<ReturnType<typeof findOwnRow>>>;
@@ -131,13 +185,13 @@ function findOwnRow(id: string) {
 }
 
 function toOwnProfile(row: OwnRow): OwnProfile {
-  const { videos, birthdate, role, cguAcceptedAt, ...user } = row;
+  const { _count, birthdate, role, cguAcceptedAt, ...user } = row;
 
   return {
     ...user,
     role: String(role),
     birthdate: birthdate.toISOString().slice(0, 10),
-    favorites: videos?._count.favorites ?? 0,
+    favorites: _count.favoritesReceived,
     cguAcceptedAt: cguAcceptedAt ? cguAcceptedAt.toISOString() : null,
   };
 }
@@ -153,6 +207,7 @@ export async function setCguConsent(id: string, accepted: boolean): Promise<OwnP
     select: OWN_SELECTION,
   });
 
+  invalidateCatalogue();
   return toOwnProfile(row);
 }
 
@@ -167,6 +222,13 @@ export async function updateOwnProfile(
 ): Promise<OwnProfile> {
   const { birthdate, ...rest } = patch;
 
+  if (birthdate) {
+    const parsed = new Date(`${birthdate}T12:00:00`);
+    if (Number.isNaN(parsed.getTime()) || !isOfLegalWorkAge(parsed)) {
+      throw new Error(UNDERAGE_MESSAGE);
+    }
+  }
+
   const row = await prisma.users.update({
     where: { id },
     data: {
@@ -177,5 +239,6 @@ export async function updateOwnProfile(
     select: OWN_SELECTION,
   });
 
+  invalidateCatalogue();
   return toOwnProfile(row);
 }

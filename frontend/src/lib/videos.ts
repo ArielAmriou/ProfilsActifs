@@ -27,6 +27,18 @@ export function isPlayable(video: VideoDescriptor): boolean {
   return video.status === "READY" && Boolean(video.playbackUrl);
 }
 
+/** Aperçu candidat / admin : lecture autorisée pendant la modération. */
+export function canPreviewPending(video: VideoDescriptor): boolean {
+  return (
+    Boolean(video.playbackUrl) &&
+    (video.status === "READY" || video.status === "PROCESSING")
+  );
+}
+
+export function isPendingValidation(video: VideoDescriptor): boolean {
+  return video.status === "PROCESSING" && !hasNoVideo(video);
+}
+
 export function hasNoVideo(video: VideoDescriptor): boolean {
   return video.providerName === "none";
 }

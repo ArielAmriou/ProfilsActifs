@@ -6,10 +6,11 @@ import { use, useEffect, useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { HeaderBar } from "@/components/HeaderBar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-import { BlockRole } from "@/components/RequireRole";
+import { RequireRole } from "@/components/RequireRole";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
+import { CertifiedBadge } from "@/components/Certif";
 import { fetchProfile, type Profile } from "@/lib/profiles-api";
 
 interface ProfileDetailPageProps {
@@ -38,12 +39,12 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   if (loading) {
     return (
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
-        <BlockRole blocked="jobseeker">
+        <RequireRole allowed={["recruiter"]}>
           <HeaderBar />
           <p role="status" className="px-6 py-20 text-center text-sm text-institutional/70">
             Chargement du profil…
           </p>
-        </BlockRole>
+        </RequireRole>
       </PageLayout>
     );
   }
@@ -55,7 +56,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   return (
     <>
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
-        <BlockRole blocked="jobseeker">
+        <RequireRole allowed={["recruiter"]}>
           <HeaderBar />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
@@ -75,11 +76,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
                     {profile.title}
                   </p>
                 </div>
-                {profile.certified && (
-                  <span className="font-title shrink-0 rounded-full bg-action px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-                    Certifié
-                  </span>
-                )}
+                {profile.certified && <CertifiedBadge className="shrink-0" />}
               </div>
 
               <div className="mt-6 w-fit overflow-hidden rounded-2xl border-2 border-border bg-institutional">
@@ -112,7 +109,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
               </dl>
             </ContentCard>
           </div>
-        </BlockRole>
+        </RequireRole>
       </PageLayout>
       <MobileBottomNav />
     </>

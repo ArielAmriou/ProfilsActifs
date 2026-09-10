@@ -2,9 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CATALOG_PAGE_SIZE } from "@/data/profiles";
+import {
+  applyCatalogFilters,
+  collectLocationOptions,
+  collectSectorOptions,
+  EMPTY_CATALOG_FILTERS,
+  type CatalogFilterState,
+} from "@/data/catalog-filters";
 import { fetchProfiles, type Profile } from "@/lib/profiles-api";
 import { useAuth } from "@/context/AuthContext";
 import { ProfileCard } from "@/components/ProfileCard";
+import { CatalogFilters } from "@/components/CatalogFilters";
 import { LoginPromptModal } from "@/components/LoginPromptModal";
 
 type LoginAction =
@@ -19,10 +27,13 @@ export function ProfileCatalog() {
   const [loginAction, setLoginAction] = useState<LoginAction | null>(null);
   const [catalog, setCatalog] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<CatalogFilterState>(EMPTY_CATALOG_FILTERS);
 
   useEffect(() => {
     let active = true;
 
+    // Instantané figé pour la session : la pagination reste cohérente même si un
+    // profil est mis à jour côté serveur pendant le parcours (voir docs/catalog-pagination.md).
     fetchProfiles().then((fetched) => {
       if (!active) return;
       setCatalog(fetched);
@@ -34,12 +45,24 @@ export function ProfileCatalog() {
     };
   }, []);
 
-  const totalPages = Math.max(1, Math.ceil(catalog.length / CATALOG_PAGE_SIZE));
+  const filteredCatalog = useMemo(
+    () => applyCatalogFilters(catalog, filters),
+    [catalog, filters],
+  );
+
+  const sectorOptions = useMemo(() => collectSectorOptions(catalog), [catalog]);
+  const locationOptions = useMemo(() => collectLocationOptions(catalog), [catalog]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredCatalog.length / CATALOG_PAGE_SIZE));
 
   const profiles = useMemo(() => {
     const start = (Math.min(page, totalPages) - 1) * CATALOG_PAGE_SIZE;
-    return catalog.slice(start, start + CATALOG_PAGE_SIZE);
-  }, [catalog, page, totalPages]);
+    return filteredCatalog.slice(start, start + CATALOG_PAGE_SIZE);
+  }, [filteredCatalog, page, totalPages]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filters]);
 
   const requireLogin = (actionLabel: LoginAction) => {
     setLoginAction(actionLabel);
@@ -55,12 +78,17 @@ export function ProfileCatalog() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const emptyMessage =
+    catalog.length === 0
+      ? "Aucun profil publié pour le moment."
+      : "Aucun profil ne correspond à ces filtres.";
+
   return (
     <section
-      className="mx-auto w-full max-w-7xl px-4 pb-28 pt-20 sm:px-6"
+      className="mx-auto w-full max-w-7xl px-4 pb-28 pt-12 sm:px-6"
       aria-labelledby="catalog-heading"
     >
-      <div className="mb-6">
+      <div className="mb-4">
         <h2 id="catalog-heading" className="font-title text-2xl font-bold text-institutional">
           Catalogue de profils
         </h2>
@@ -69,13 +97,25 @@ export function ProfileCatalog() {
         </p>
       </div>
 
+      {!loading && catalog.length > 0 && (
+        <CatalogFilters
+          filters={filters}
+          sectorOptions={sectorOptions}
+          locationOptions={locationOptions}
+          onChange={setFilters}
+          onReset={() => setFilters(EMPTY_CATALOG_FILTERS)}
+          resultCount={filteredCatalog.length}
+          totalCount={catalog.length}
+        />
+      )}
+
       {loading ? (
         <p role="status" className="py-16 text-center text-sm text-institutional/70">
           Chargement des profils…
         </p>
       ) : profiles.length === 0 ? (
         <p role="status" className="py-16 text-center text-sm text-institutional/70">
-          Aucun profil publié pour le moment.
+          {emptyMessage}
         </p>
       ) : (
         <ul className="grid list-none grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

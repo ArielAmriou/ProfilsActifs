@@ -7,9 +7,12 @@ export interface Profile {
   title: string;
   sector: string;
   location: string;
+  availability: string | null;
   skills: string[];
   certified: boolean;
   likes: number;
+  updatedAt: string;
+  videoId: string | null;
   video: VideoDescriptor;
   subtitlesUrl?: string;
 }
@@ -22,9 +25,12 @@ interface ApiProfile {
   title: string | null;
   sector: string | null;
   location: string | null;
+  availability: string | null;
   skills: string[];
   certified: boolean;
   favorites: number;
+  updatedAt: string;
+  videoId: string | null;
   video: VideoDescriptor;
 }
 
@@ -42,9 +48,12 @@ function toProfile(profile: ApiProfile): Profile {
     title: profile.title ?? UNKNOWN,
     sector: profile.sector ?? UNKNOWN,
     location: profile.location ?? UNKNOWN,
+    availability: profile.availability ?? null,
     skills: profile.skills,
     certified: profile.certified,
     likes: profile.favorites,
+    updatedAt: profile.updatedAt ?? new Date(0).toISOString(),
+    videoId: profile.videoId ?? null,
     video: profile.video ?? NO_VIDEO,
   };
 }
@@ -77,6 +86,7 @@ export interface MyProfile {
   title: string | null;
   sector: string | null;
   location: string | null;
+  availability: string | null;
   skills: string[];
   certified: boolean;
   favorites: number;
@@ -92,7 +102,9 @@ export interface MyProfilePatch {
   title?: string | null;
   sector?: string | null;
   location?: string | null;
+  availability?: string | null;
   skills?: string[];
+  certified?: boolean;
 }
 
 export async function fetchMyProfile(): Promise<MyProfile | null> {

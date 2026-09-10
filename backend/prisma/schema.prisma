@@ -18,6 +18,8 @@ model Users {
   title         String?    @db.VarChar(255)
   sector        String?    @db.VarChar(255)
   location      String?    @db.VarChar(255)
+  availability  String?    @db.VarChar(255)
+  organization  String?    @db.VarChar(255)
   skills        String[]   @default([])
   certified     Boolean    @default(false)
   cguAcceptedAt DateTime?  @map("cgu_accepted_at") @db.Timestamptz(3)
@@ -27,7 +29,8 @@ model Users {
   birthdate     DateTime   @db.Timestamp(0)
 
   answers       Answers[]
-  favorites     Favorites[]
+  favoritesGiven    Favorites[] @relation("RecruiterFavorites")
+  favoritesReceived Favorites[] @relation("FavoritedAsJobseeker")
   surveys       Surveys[]
   videos        Videos?
   sessions      Session[]
@@ -71,7 +74,6 @@ model Videos {
   size         Int?
   createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt    DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
-  favorites    Favorites[]
   user         Users       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([providerName, providerId])
@@ -79,12 +81,15 @@ model Videos {
 }
 
 model Favorites {
-  videoId String @map("video_id") @db.Uuid
-  userId  String @map("user_id") @db.Uuid
-  user    Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  video   Videos @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  favoritedUserId String   @map("favorited_user_id") @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  @@id([videoId, userId])
+  favoritedUser Users @relation("FavoritedAsJobseeker", fields: [favoritedUserId], references: [id], onDelete: Cascade)
+  recruiter     Users @relation("RecruiterFavorites", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([favoritedUserId, userId])
+  @@index([userId])
   @@map("favorites")
 }
 
@@ -95,11 +100,13 @@ model Notifications {
   type        NotificationType
   payload     Json             @default("{}")
   createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  readAt      DateTime?        @map("read_at") @db.Timestamptz(3)
 
   recipient   Users            @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
   actor       Users?           @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([recipientId, createdAt])
+  @@index([recipientId, readAt])
   @@map("notifications")
 }
 

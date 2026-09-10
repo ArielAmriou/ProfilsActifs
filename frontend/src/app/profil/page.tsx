@@ -10,7 +10,13 @@ import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuth } from "@/context/AuthContext";
 import { CertifiedBadge } from "@/components/Certif";
+import { PendingValidationBadge } from "@/components/PendingValidationBadge";
 import { CguConsent } from "@/components/CguConsent";
+import { FrenchDateInput } from "@/components/FrenchDateInput";
+import { PostalCodeAutocomplete } from "@/components/PostalCodeAutocomplete";
+import { PROFILE_SECTORS, isProfileSector } from "@/data/sectors";
+import { isOfLegalWorkAge, parseIsoDateLocal, UNDERAGE_MESSAGE } from "@/lib/age";
+import { fetchMyVideo, isPendingValidation, NO_VIDEO, type VideoDescriptor } from "@/lib/videos";
 
 const inputClassName =
   "mt-1.5 w-full rounded-lg border-2 border-border bg-surface px-3 py-2.5 text-institutional outline-none focus:border-action focus:ring-2 focus:ring-action/30";
@@ -21,14 +27,29 @@ export default function ProfilPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [video, setVideo] = useState<VideoDescriptor>(NO_VIDEO);
 
   useEffect(() => {
     setForm(jobseekerProfile);
   }, [jobseekerProfile]);
 
+  useEffect(() => {
+    fetchMyVideo().then(setVideo);
+  }, []);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!form.birthdate.trim()) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(form.birthdate.trim())) {
+      setError("La date de naissance doit être au format JJ/MM/AAAA.");
+      return;
+    }
+    const birth = parseIsoDateLocal(form.birthdate);
+    if (!birth || !isOfLegalWorkAge(birth)) {
+      setError(UNDERAGE_MESSAGE);
+      return;
+    }
+    if (!form.location.trim()) {
+      setError("Choisissez un code postal dans la liste proposée.");
       return;
     }
 
@@ -60,13 +81,14 @@ export default function ProfilPage() {
     <>
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
         <RequireRole allowed={["jobseeker"]}>
-          <HeaderBar />
           <CandidateDisclaimerBanner />
+          <HeaderBar className="pointer-events-none relative z-30 flex items-center justify-end gap-3 px-4 py-3 lg:px-8" />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <h1 className="font-title text-2xl font-bold text-institutional">Profil</h1>
                 {jobseekerProfile.certified && <CertifiedBadge />}
+                {isPendingValidation(video) && <PendingValidationBadge />}
               </div>
 
               <p className="mt-2 text-sm text-institutional/80">
@@ -154,29 +176,13 @@ export default function ProfilPage() {
                   <label htmlFor="birthdate" className="font-title block text-sm font-bold">
                     Date de naissance
                   </label>
-                  <input
+                  <FrenchDateInput
                     id="birthdate"
                     name="birthdate"
-                    type="date"
                     autoComplete="bday"
                     required
                     value={form.birthdate}
-                    onChange={(event) =>
-                      setForm({ ...form, birthdate: event.target.value })
-                    }
-                    className={inputClassName}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="title" className="font-title block text-sm font-bold">
-                    Intitulé du poste recherché
-                  </label>
-                  <input
-                    id="title"
-                    name="title"
-                    value={form.title}
-                    onChange={(event) => setForm({ ...form, title: event.target.value })}
+                    onChange={(birthdate) => setForm({ ...form, birthdate })}
                     className={inputClassName}
                   />
                 </div>
@@ -185,40 +191,37 @@ export default function ProfilPage() {
                   <label htmlFor="sector" className="font-title block text-sm font-bold">
                     Secteur
                   </label>
-                  <input
+                  <select
                     id="sector"
                     name="sector"
+                    required
                     value={form.sector}
                     onChange={(event) => setForm({ ...form, sector: event.target.value })}
                     className={inputClassName}
-                  />
+                  >
+                    <option value="">Choisir un secteur</option>
+                    {form.sector && !isProfileSector(form.sector) && (
+                      <option value={form.sector}>{form.sector} (valeur actuelle)</option>
+                    )}
+                    {PROFILE_SECTORS.map((sector) => (
+                      <option key={sector} value={sector}>
+                        {sector}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
                   <label htmlFor="location" className="font-title block text-sm font-bold">
-                    Localisation
+                    Localisation (code postal)
                   </label>
-                  <input
+                  <PostalCodeAutocomplete
                     id="location"
                     name="location"
+                    required
                     value={form.location}
-                    onChange={(event) => setForm({ ...form, location: event.target.value })}
+                    onChange={(location) => setForm({ ...form, location })}
                     className={inputClassName}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="skills" className="font-title block text-sm font-bold">
-                    Compétences
-                  </label>
-                  <textarea
-                    id="skills"
-                    name="skills"
-                    rows={3}
-                    value={form.skills}
-                    onChange={(event) => setForm({ ...form, skills: event.target.value })}
-                    className={inputClassName}
-                    placeholder="Ex. : Soudure TIG, Automatisme, Lecture de plans"
                   />
                 </div>
 

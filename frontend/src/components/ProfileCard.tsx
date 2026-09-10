@@ -6,12 +6,37 @@ import type { Profile } from "@/lib/profiles-api";
 import { useAuth } from "@/context/AuthContext";
 import { useProfileInteractions } from "@/hooks/useProfileInteractions";
 import { isPlayable } from "@/lib/videos";
+import { notifyVideoPlaying, clearVideoPlaying } from "@/lib/video-playback";
 import { VideoUnavailable } from "@/components/video/VideoUnavailable";
 import type { LoginPromptAction } from "@/components/LoginPromptModal";
+import { CertifiedBadge } from "@/components/Certif";
 
 interface ProfileCardProps {
   profile: Profile;
   onRequireLogin: (actionLabel: LoginPromptAction) => void;
+}
+
+function BookmarkIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="size-5"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={filled ? 0 : 2}
+    >
+      <path d="M6 2h12a1 1 0 011 1v19l-7-4-7 4V3a1 1 0 011-1z" />
+    </svg>
+  );
+}
+
+function PersonIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="currentColor">
+      <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+    </svg>
+  );
 }
 
 export function ProfileCard({ profile, onRequireLogin }: ProfileCardProps) {
@@ -21,10 +46,7 @@ export function ProfileCard({ profile, onRequireLogin }: ProfileCardProps) {
   const video = profile.video;
   const playable = isPlayable(video);
   const interactionId = profile.id;
-  const { liked, favorited, toggleLike, toggleFavorite } = useProfileInteractions(
-    interactionId,
-    profile.likes,
-  );
+  const { favorited, toggleFavorite } = useProfileInteractions(interactionId, profile.likes);
 
   const canInteract = isAuthenticated && role === "recruiter";
 
@@ -48,20 +70,12 @@ export function ProfileCard({ profile, onRequireLogin }: ProfileCardProps) {
     }
   };
 
-  const handleLike = () => {
-    if (!canInteract) {
-      onRequireLogin("liker ce profil");
-      return;
-    }
-    toggleLike();
-  };
-
   const handleFavorite = () => {
     if (!canInteract) {
       onRequireLogin("ajouter ce profil à vos favoris");
       return;
     }
-    toggleFavorite();
+    void toggleFavorite();
   };
 
   return (
@@ -75,8 +89,15 @@ export function ProfileCard({ profile, onRequireLogin }: ProfileCardProps) {
             preload="metadata"
             className="absolute inset-0 size-full object-cover"
             aria-label={`Vidéo de présentation de ${profile.name}`}
-            onPause={() => setPlaying(false)}
-            onEnded={() => setPlaying(false)}
+            onPlay={(e) => notifyVideoPlaying(e.currentTarget)}
+            onPause={(e) => {
+              setPlaying(false);
+              clearVideoPlaying(e.currentTarget);
+            }}
+            onEnded={(e) => {
+              setPlaying(false);
+              clearVideoPlaying(e.currentTarget);
+            }}
           >
             {profile.subtitlesUrl && (
               <track
@@ -110,55 +131,46 @@ export function ProfileCard({ profile, onRequireLogin }: ProfileCardProps) {
           )}
         </button>
 
-        {profile.certified && (
-          <span className="font-title absolute left-3 top-3 z-20 rounded-full bg-action px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-            Certifié
-          </span>
-        )}
+        {profile.certified && <CertifiedBadge className="absolute left-3 top-3 z-20" />}
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        <div>
-          <h2 className="font-title text-base font-bold text-institutional">{profile.name}</h2>
-          <p className="font-title mt-0.5 text-sm font-semibold text-institutional/80">
-            {profile.title}
-          </p>
-          <p className="mt-2 text-xs text-institutional/70">
-            {profile.sector} · {profile.location}
-          </p>
-        </div>
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <p className="text-xs text-institutional/70">
+          {profile.sector} · {profile.location}
+        </p>
 
-        <div className="mt-auto flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={handleLike}
-            aria-pressed={liked}
-            className={`font-title rounded-lg border-2 px-3 py-2 text-xs font-bold transition ${
-              liked
-                ? "border-action bg-action text-white"
-                : "border-border text-institutional hover:border-action"
-            }`}
-          >
-            {liked ? "Aimé" : "J'aime"}
-          </button>
-          <button
-            type="button"
-            onClick={handleFavorite}
-            aria-pressed={favorited}
-            className={`font-title rounded-lg border-2 px-3 py-2 text-xs font-bold transition ${
-              favorited
-                ? "border-action bg-action text-white"
-                : "border-border text-institutional hover:border-action"
-            }`}
-          >
-            {favorited ? "Enregistré" : "Favori"}
-          </button>
-          <Link
-            href={`/profils/${profile.id}`}
-            className="font-title rounded-lg border-2 border-border px-3 py-2 text-xs font-bold text-institutional no-underline transition hover:border-institutional"
-          >
-            Voir le profil
-          </Link>
+        <div className="mt-auto flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="font-title truncate text-base font-bold text-institutional">
+              {profile.name}
+            </h2>
+            <p className="font-title mt-0.5 truncate text-sm font-semibold text-institutional/80">
+              {profile.title}
+            </p>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={handleFavorite}
+              aria-pressed={favorited}
+              aria-label={favorited ? "Retirer des favoris" : "Ajouter aux favoris"}
+              className={`flex size-9 items-center justify-center rounded-full border-2 transition ${
+                favorited
+                  ? "border-action bg-action text-white"
+                  : "border-border bg-surface text-institutional hover:border-action hover:text-action"
+              }`}
+            >
+              <BookmarkIcon filled={favorited} />
+            </button>
+            <Link
+              href={`/profils/${profile.id}`}
+              aria-label={`Voir le profil de ${profile.name}`}
+              className="flex size-9 items-center justify-center rounded-full border-2 border-border bg-surface text-institutional no-underline transition hover:border-action hover:text-action"
+            >
+              <PersonIcon />
+            </Link>
+          </div>
         </div>
       </div>
     </article>

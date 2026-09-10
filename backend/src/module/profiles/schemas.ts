@@ -15,9 +15,12 @@ export const profileSchema = z.object({
   title: z.string().nullable(),
   sector: z.string().nullable(),
   location: z.string().nullable(),
+  availability: z.string().nullable(),
   skills: z.array(z.string()),
   certified: z.boolean(),
   favorites: z.number(),
+  updatedAt: z.string(),
+  videoId: z.uuid().nullable(),
   video: profileVideoSchema,
 });
 
@@ -40,6 +43,7 @@ export const myProfileSchema = z.object({
   title: z.string().nullable(),
   sector: z.string().nullable(),
   location: z.string().nullable(),
+  availability: z.string().nullable(),
   skills: z.array(z.string()),
   certified: z.boolean(),
   favorites: z.number(),
@@ -59,5 +63,6 @@ export const updateMyProfileSchema = z.object({
   title: optionalText,
   sector: optionalText,
   location: optionalText,
+  availability: optionalText,
   skills: z.array(z.string().trim().min(1).max(255)).max(30).optional(),
 });
