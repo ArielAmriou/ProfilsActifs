@@ -38,12 +38,32 @@ Instead of a traditional resume, job seekers present themselves through a short 
 
 ```
 .
-├── backend/               Fastify API (auth, certification, health) + Prisma schema
-├── frontend/              Next.js application
-├── docs/                  Functional specification briefs
+├── backend/               Fastify API + Prisma schema and migrations
+│   ├── src/module/        One folder per domain: auth, profiles, video,
+│   │                      notifications, favorite, admin, user, certification
+│   ├── scripts/           Maintenance scripts (video migration, video seeding)
+│   └── tests/             bun test suites
+├── frontend/              Next.js application (App Router)
+├── docs/                  Functional briefs and technical documentation
+├── perf/                  Load testing scenario, raw results and report
+├── seed.sh                Demo dataset generator
 ├── docker-compose.yml     Orchestration for the database, API, and web app
 └── .github/workflows/     CI pipelines
 ```
+
+## Documentation
+
+| Document | Contents |
+| --- | --- |
+| [docs/architecture.md](docs/architecture.md) | Overall design, request flow, structuring decisions |
+| [docs/api.md](docs/api.md) | Reference for every HTTP endpoint |
+| [docs/database.md](docs/database.md) | Data model, relations, migrations |
+| [docs/frontend.md](docs/frontend.md) | Pages, components, state and API clients |
+| [docs/developpement.md](docs/developpement.md) | Setup, environment variables, scripts, known pitfalls |
+| [perf/RAPPORT.md](perf/RAPPORT.md) | Load test report (100 virtual users) |
+
+Interactive API documentation is served by the running backend at
+[http://localhost:8081/docs](http://localhost:8081/docs).
 
 ## Getting started
 
@@ -78,6 +98,15 @@ The frontend is served on [http://localhost:3000](http://localhost:3000) and the
 ### Run locally without Docker
 
 Each service can also be run independently with Bun; see [backend/README.md](backend/README.md) and [frontend/README.md](frontend/README.md) for details.
+
+### Demo dataset
+
+```bash
+./seed.sh                            # 500 profiles, 40 recruiters, favorites
+cd backend && bun run seed:videos    # attaches videos through the video provider
+```
+
+See [docs/developpement.md](docs/developpement.md) for the prerequisites of both scripts.
 
 ## Continuous integration
 

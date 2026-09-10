@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { CGU_VERSION } from "../../config/cgu";
+import { isOfLegalWorkAge, UNDERAGE_MESSAGE } from "../../lib/age";
 import { describeVideo, type VideoDescriptor } from "../video/service";
 
 const NO_VIDEO: VideoDescriptor = {
@@ -54,7 +55,12 @@ export interface PublicProfile {
 
 function findJobseekers() {
   return prisma.users.findMany({
-    where: { role: "jobseeker", cguAcceptedAt: { not: null } },
+    where: {
+      role: "jobseeker",
+      cguAcceptedAt: { not: null },
+      // Catalogue public : uniquement les profils dont la vidéo a été validée.
+      videos: { is: { status: "READY" } },
+    },
     select: SELECTION,
     orderBy: [
       { updatedAt: "desc" },
@@ -75,13 +81,47 @@ async function toPublicProfile(row: JobseekerRow): Promise<PublicProfile> {
   };
 }
 
-export async function listJobseekerProfiles(): Promise<PublicProfile[]> {
+const CATALOGUE_TTL_MS = Number(process.env.PROFILES_CACHE_TTL_MS ?? 5000);
+
+let catalogue: { expiresAt: number; profiles: PublicProfile[] } | null = null;
+let inFlight: Promise<PublicProfile[]> | null = null;
+
+async function buildCatalogue(): Promise<PublicProfile[]> {
   return Promise.all((await findJobseekers()).map(toPublicProfile));
+}
+
+export function invalidateCatalogue(): void {
+  catalogue = null;
+}
+
+export async function listJobseekerProfiles(): Promise<PublicProfile[]> {
+  if (catalogue && catalogue.expiresAt > Date.now()) {
+    return catalogue.profiles;
+  }
+
+  if (inFlight) {
+    return inFlight;
+  }
+
+  inFlight = buildCatalogue();
+
+  try {
+    const profiles = await inFlight;
+    catalogue = { expiresAt: Date.now() + CATALOGUE_TTL_MS, profiles };
+    return profiles;
+  } finally {
+    inFlight = null;
+  }
 }
 
 export async function getJobseekerProfile(id: string): Promise<PublicProfile | null> {
   const row = await prisma.users.findFirst({
-    where: { id, role: "jobseeker", cguAcceptedAt: { not: null } },
+    where: {
+      id,
+      role: "jobseeker",
+      cguAcceptedAt: { not: null },
+      videos: { is: { status: "READY" } },
+    },
     select: SELECTION,
   });
 
@@ -167,6 +207,7 @@ export async function setCguConsent(id: string, accepted: boolean): Promise<OwnP
     select: OWN_SELECTION,
   });
 
+  invalidateCatalogue();
   return toOwnProfile(row);
 }
 
@@ -181,6 +222,13 @@ export async function updateOwnProfile(
 ): Promise<OwnProfile> {
   const { birthdate, ...rest } = patch;
 
+  if (birthdate) {
+    const parsed = new Date(`${birthdate}T12:00:00`);
+    if (Number.isNaN(parsed.getTime()) || !isOfLegalWorkAge(parsed)) {
+      throw new Error(UNDERAGE_MESSAGE);
+    }
+  }
+
   const row = await prisma.users.update({
     where: { id },
     data: {
@@ -191,5 +239,6 @@ export async function updateOwnProfile(
     select: OWN_SELECTION,
   });
 
+  invalidateCatalogue();
   return toOwnProfile(row);
 }

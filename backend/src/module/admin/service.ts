@@ -32,7 +32,7 @@ export async function getPendingVideos() {
       id: record.id,
       userId: record.userId,
       userName: record.user.name,
-      video: await describeVideo(record),
+      video: await describeVideo(record, { previewWhilePending: true }),
       createdAt: record.createdAt.toISOString(),
     }))
   );

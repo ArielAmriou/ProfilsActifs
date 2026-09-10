@@ -62,6 +62,7 @@ interface AuthContextValue {
       firstname: string;
       lastname: string;
       birthdate: string;
+      organization?: string;
       cguAccepted: boolean;
     },
   ) => Promise<UserRole>;
@@ -198,6 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         firstname: string;
         lastname: string;
         birthdate: string;
+        organization?: string;
         cguAccepted: boolean;
       },
     ) => {
@@ -207,11 +209,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const firstname = profile.firstname.trim();
       const lastname = profile.lastname.trim();
       const birthdate = profile.birthdate.trim();
+      const organization = profile.organization?.trim() ?? "";
       if (!firstname || !lastname) {
         throw new Error("Le prénom et le nom sont obligatoires.");
       }
       if (!birthdate) {
         throw new Error("La date de naissance est obligatoire.");
+      }
+      if (nextRole === "recruiter" && !organization) {
+        throw new Error("L'organisation est obligatoire pour un compte recruteur.");
       }
       if (!profile.cguAccepted) {
         throw new Error(
@@ -222,6 +228,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         firstname,
         lastname,
         birthdate,
+        organization,
         cguAccepted: profile.cguAccepted,
       });
       await applyUser({

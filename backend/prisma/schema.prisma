@@ -19,6 +19,7 @@ model Users {
   sector        String?    @db.VarChar(255)
   location      String?    @db.VarChar(255)
   availability  String?    @db.VarChar(255)
+  organization  String?    @db.VarChar(255)
   skills        String[]   @default([])
   certified     Boolean    @default(false)
   cguAcceptedAt DateTime?  @map("cgu_accepted_at") @db.Timestamptz(3)

@@ -95,7 +95,6 @@ export default function AdminUsersPage() {
         <AlertDialog.Backdrop>
           <AlertDialog.Container>
             <AlertDialog.Dialog className="font-title sm:max-w-[400px]">
-              <AlertDialog.CloseTrigger />
               <AlertDialog.Header>
                 <AlertDialog.Icon status="danger" />
                 <AlertDialog.Heading>Supprimer l'utilisateur ?</AlertDialog.Heading>

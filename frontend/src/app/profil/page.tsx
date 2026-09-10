@@ -10,10 +10,13 @@ import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuth } from "@/context/AuthContext";
 import { CertifiedBadge } from "@/components/Certif";
+import { PendingValidationBadge } from "@/components/PendingValidationBadge";
 import { CguConsent } from "@/components/CguConsent";
 import { FrenchDateInput } from "@/components/FrenchDateInput";
 import { PostalCodeAutocomplete } from "@/components/PostalCodeAutocomplete";
 import { PROFILE_SECTORS, isProfileSector } from "@/data/sectors";
+import { isOfLegalWorkAge, parseIsoDateLocal, UNDERAGE_MESSAGE } from "@/lib/age";
+import { fetchMyVideo, isPendingValidation, NO_VIDEO, type VideoDescriptor } from "@/lib/videos";
 
 const inputClassName =
   "mt-1.5 w-full rounded-lg border-2 border-border bg-surface px-3 py-2.5 text-institutional outline-none focus:border-action focus:ring-2 focus:ring-action/30";
@@ -24,15 +27,25 @@ export default function ProfilPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [video, setVideo] = useState<VideoDescriptor>(NO_VIDEO);
 
   useEffect(() => {
     setForm(jobseekerProfile);
   }, [jobseekerProfile]);
 
+  useEffect(() => {
+    fetchMyVideo().then(setVideo);
+  }, []);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(form.birthdate.trim())) {
       setError("La date de naissance doit être au format JJ/MM/AAAA.");
+      return;
+    }
+    const birth = parseIsoDateLocal(form.birthdate);
+    if (!birth || !isOfLegalWorkAge(birth)) {
+      setError(UNDERAGE_MESSAGE);
       return;
     }
     if (!form.location.trim()) {
@@ -72,9 +85,10 @@ export default function ProfilPage() {
           <HeaderBar className="pointer-events-none relative z-30 flex items-center justify-end gap-3 px-4 py-3 lg:px-8" />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <h1 className="font-title text-2xl font-bold text-institutional">Profil</h1>
                 {jobseekerProfile.certified && <CertifiedBadge />}
+                {isPendingValidation(video) && <PendingValidationBadge />}
               </div>
 
               <p className="mt-2 text-sm text-institutional/80">
