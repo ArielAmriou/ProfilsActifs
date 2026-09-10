@@ -105,6 +105,28 @@ export default function ProfilPage() {
                     {jobseekerProfile.favorites}
                   </p>
                 </div>
+                <div className="rounded-xl border-2 border-border bg-content-bg p-4">
+                  <p className="font-title text-xs font-bold uppercase tracking-wide text-institutional/60">
+                    Visibilité
+                  </p>
+                  <label className="mt-3 flex cursor-pointer items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(form.profileHidden)}
+                      onChange={(event) =>
+                        setForm({ ...form, profileHidden: event.target.checked })
+                      }
+                      className="mt-0.5 size-5 shrink-0 accent-action"
+                    />
+                    <span className="text-sm text-institutional">
+                      <span className="font-title font-bold">Masquer mon profil</span>
+                      <span className="mt-1 block text-institutional/75">
+                        Invisible dans le catalogue. Les recruteurs qui l&apos;avaient en
+                        favori verront « Profil indisponible ».
+                      </span>
+                    </span>
+                  </label>
+                </div>
               </div>
 
               <form onSubmit={handleSubmit} className="mt-8 space-y-5">

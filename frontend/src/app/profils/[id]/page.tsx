@@ -5,14 +5,12 @@ import { use, useEffect, useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { HeaderBar } from "@/components/HeaderBar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-import { RequireRole } from "@/components/RequireRole";
+import { BlockRole } from "@/components/RequireRole";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { CertifiedBadge } from "@/components/Certif";
-import { ApiError } from "@/lib/api";
-import { apiFetch } from "@/lib/api";
-import { fetchProfile, type Profile } from "@/lib/profiles-api";
+import { fetchProfileResult, type Profile } from "@/lib/profiles-api";
 
 interface ProfileDetailPageProps {
   params: Promise<{ id: string }>;
@@ -26,35 +24,12 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   useEffect(() => {
     let active = true;
 
-    fetchProfile(id).then(async (fetched) => {
+    fetchProfileResult(id).then((result) => {
       if (!active) return;
-      if (fetched) {
-        setProfile(fetched);
-        setAccess("ok");
-        return;
+      if (result.status === "ok") {
+        setProfile(result.profile);
       }
-
-      // Distinguer profil caché / introuvable via le message d'erreur API.
-      try {
-        await apiFetch(`/api/profiles/${id}`);
-        if (!active) return;
-        setAccess("missing");
-      } catch (error) {
-        if (!active) return;
-        if (error instanceof ApiError) {
-          const body = error.body as { code?: string; error?: string } | null;
-          if (
-            body?.code === "PROFILE_HIDDEN" ||
-            (typeof body?.error === "string" &&
-              body.error.toLowerCase().includes("indisponible")) ||
-            error.message.toLowerCase().includes("indisponible")
-          ) {
-            setAccess("hidden");
-            return;
-          }
-        }
-        setAccess("missing");
-      }
+      setAccess(result.status);
     });
 
     return () => {
@@ -65,12 +40,12 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   if (access === "loading") {
     return (
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
-        <RequireRole allowed={["recruiter"]}>
+        <BlockRole blocked="jobseeker">
           <HeaderBar />
           <p role="status" className="px-6 py-20 text-center text-sm text-institutional/70">
             Chargement du profil…
           </p>
-        </RequireRole>
+        </BlockRole>
       </PageLayout>
     );
   }
@@ -108,7 +83,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   return (
     <>
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
-        <RequireRole allowed={["recruiter"]}>
+        <BlockRole blocked="jobseeker">
           <HeaderBar />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
@@ -161,7 +136,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
               </dl>
             </ContentCard>
           </div>
-        </RequireRole>
+        </BlockRole>
       </PageLayout>
       <MobileBottomNav />
     </>
