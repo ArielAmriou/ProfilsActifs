@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { HeaderBar } from "@/components/HeaderBar";
@@ -11,6 +10,8 @@ import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { CertifiedBadge } from "@/components/Certif";
+import { ApiError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import { fetchProfile, type Profile } from "@/lib/profiles-api";
 
 interface ProfileDetailPageProps {
@@ -20,15 +21,40 @@ interface ProfileDetailPageProps {
 export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   const { id } = use(params);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [access, setAccess] = useState<"loading" | "ok" | "hidden" | "missing">("loading");
 
   useEffect(() => {
     let active = true;
 
-    fetchProfile(id).then((fetched) => {
+    fetchProfile(id).then(async (fetched) => {
       if (!active) return;
-      setProfile(fetched);
-      setLoading(false);
+      if (fetched) {
+        setProfile(fetched);
+        setAccess("ok");
+        return;
+      }
+
+      // Distinguer profil caché / introuvable via le message d'erreur API.
+      try {
+        await apiFetch(`/api/profiles/${id}`);
+        if (!active) return;
+        setAccess("missing");
+      } catch (error) {
+        if (!active) return;
+        if (error instanceof ApiError) {
+          const body = error.body as { code?: string; error?: string } | null;
+          if (
+            body?.code === "PROFILE_HIDDEN" ||
+            (typeof body?.error === "string" &&
+              body.error.toLowerCase().includes("indisponible")) ||
+            error.message.toLowerCase().includes("indisponible")
+          ) {
+            setAccess("hidden");
+            return;
+          }
+        }
+        setAccess("missing");
+      }
     });
 
     return () => {
@@ -36,7 +62,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
     };
   }, [id]);
 
-  if (loading) {
+  if (access === "loading") {
     return (
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
         <BlockRole blocked="jobseeker">
@@ -49,8 +75,34 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
     );
   }
 
-  if (!profile) {
-    notFound();
+  if (access === "hidden" || access === "missing" || !profile) {
+    return (
+      <>
+        <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
+          <BlockRole blocked="jobseeker">
+            <HeaderBar />
+            <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
+              <ContentCard className="w-full max-w-2xl">
+                <Link
+                  href="/favoris"
+                  className="font-title text-sm font-bold text-institutional no-underline hover:underline"
+                >
+                  ← Retour
+                </Link>
+                <h1 className="font-title mt-6 text-2xl font-bold text-institutional">
+                  Profil indisponible
+                </h1>
+                <p className="mt-3 text-sm text-institutional/80">
+                  Ce profil n&apos;est plus consultable. Le candidat l&apos;a peut-être masqué
+                  ou retiré du catalogue.
+                </p>
+              </ContentCard>
+            </div>
+          </BlockRole>
+        </PageLayout>
+        <MobileBottomNav />
+      </>
+    );
   }
 
   return (
