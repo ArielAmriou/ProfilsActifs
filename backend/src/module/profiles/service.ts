@@ -75,8 +75,37 @@ async function toPublicProfile(row: JobseekerRow): Promise<PublicProfile> {
   };
 }
 
-export async function listJobseekerProfiles(): Promise<PublicProfile[]> {
+const CATALOGUE_TTL_MS = Number(process.env.PROFILES_CACHE_TTL_MS ?? 5000);
+
+let catalogue: { expiresAt: number; profiles: PublicProfile[] } | null = null;
+let inFlight: Promise<PublicProfile[]> | null = null;
+
+async function buildCatalogue(): Promise<PublicProfile[]> {
   return Promise.all((await findJobseekers()).map(toPublicProfile));
+}
+
+export function invalidateCatalogue(): void {
+  catalogue = null;
+}
+
+export async function listJobseekerProfiles(): Promise<PublicProfile[]> {
+  if (catalogue && catalogue.expiresAt > Date.now()) {
+    return catalogue.profiles;
+  }
+
+  if (inFlight) {
+    return inFlight;
+  }
+
+  inFlight = buildCatalogue();
+
+  try {
+    const profiles = await inFlight;
+    catalogue = { expiresAt: Date.now() + CATALOGUE_TTL_MS, profiles };
+    return profiles;
+  } finally {
+    inFlight = null;
+  }
 }
 
 export async function getJobseekerProfile(id: string): Promise<PublicProfile | null> {
@@ -167,6 +196,7 @@ export async function setCguConsent(id: string, accepted: boolean): Promise<OwnP
     select: OWN_SELECTION,
   });
 
+  invalidateCatalogue();
   return toOwnProfile(row);
 }
 
@@ -191,5 +221,6 @@ export async function updateOwnProfile(
     select: OWN_SELECTION,
   });
 
+  invalidateCatalogue();
   return toOwnProfile(row);
 }
