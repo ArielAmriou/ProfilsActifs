@@ -12,8 +12,9 @@ interface Notice {
 }
 
 const PROCESSING: Notice = {
-  title: "Vidéo en cours de traitement",
-  detail: "Elle sera visible dès que le traitement sera terminé. Le reste du profil est consultable.",
+  title: "Vidéo en cours de validation",
+  detail:
+    "Un administrateur doit valider cette vidéo avant sa publication dans le catalogue. Le reste du profil est consultable.",
 };
 
 const UNAVAILABLE: Notice = {

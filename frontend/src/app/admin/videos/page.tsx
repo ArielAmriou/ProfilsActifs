@@ -65,6 +65,7 @@ export default function AdminVideosPage() {
                   video={record.video}
                   label={`Vidéo de ${record.userName}`}
                   className="h-full w-full object-cover"
+                  allowPendingPreview
                 />
               </div>
               <div className="p-4">

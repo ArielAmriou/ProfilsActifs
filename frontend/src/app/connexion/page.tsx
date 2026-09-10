@@ -8,6 +8,7 @@ import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useAuth } from "@/context/AuthContext";
 import { FrenchDateInput } from "@/components/FrenchDateInput";
+import { isOfLegalWorkAge, parseIsoDateLocal, UNDERAGE_MESSAGE } from "@/lib/age";
 import { getHomeForRole, type UserRole } from "@/types/auth";
 
 type AuthMode = "login" | "register";
@@ -85,6 +86,7 @@ function AuthForm() {
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [birthdate, setBirthdate] = useState("");
+  const [organization, setOrganization] = useState("");
   const [cguAccepted, setCguAccepted] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>("recruiter");
   const [error, setError] = useState("");
@@ -122,6 +124,19 @@ function AuthForm() {
       return;
     }
 
+    if (mode === "register") {
+      const birth = parseIsoDateLocal(birthdate);
+      if (!birth || !isOfLegalWorkAge(birth)) {
+        setError(UNDERAGE_MESSAGE);
+        return;
+      }
+    }
+
+    if (mode === "register" && selectedRole === "recruiter" && !organization.trim()) {
+      setError("L'organisation est obligatoire pour un compte recruteur.");
+      return;
+    }
+
     if (mode === "register" && !cguAccepted) {
       setError(
         "Vous devez accepter les Conditions Générales d'Utilisation pour créer un compte.",
@@ -138,6 +153,7 @@ function AuthForm() {
               firstname,
               lastname,
               birthdate,
+              organization: selectedRole === "recruiter" ? organization : undefined,
               cguAccepted,
             });
 
@@ -294,6 +310,25 @@ function AuthForm() {
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                   className={inputClassName}
+                />
+              </div>
+            )}
+
+            {mode === "register" && selectedRole === "recruiter" && (
+              <div>
+                <label htmlFor="organization" className="font-title block text-sm font-bold">
+                  Organisation
+                </label>
+                <input
+                  id="organization"
+                  name="organization"
+                  type="text"
+                  autoComplete="organization"
+                  required
+                  value={organization}
+                  onChange={(event) => setOrganization(event.target.value)}
+                  className={inputClassName}
+                  placeholder="Nom de votre organisation"
                 />
               </div>
             )}

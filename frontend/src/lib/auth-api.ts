@@ -1,4 +1,5 @@
 import { apiFetch, ApiError } from "@/lib/api";
+import { isOfLegalWorkAge, parseIsoDateLocal, UNDERAGE_MESSAGE } from "@/lib/age";
 import { isUserRole, type UserRole } from "@/types/auth";
 
 export interface AuthUser {
@@ -106,6 +107,7 @@ export async function signUpWithEmail(
     lastname: string;
     name?: string;
     birthdate: string;
+    organization?: string;
     cguAccepted: boolean;
   },
 ): Promise<AuthUser> {
@@ -121,6 +123,11 @@ export async function signUpWithEmail(
     );
   }
 
+  const organization = profile.organization?.trim() ?? "";
+  if (role === "recruiter" && !organization) {
+    throw new Error("L'organisation est obligatoire pour un compte recruteur.");
+  }
+
   const localPart = email.split("@")[0]?.trim() || "utilisateur";
   const name = profile.name?.trim() || `${firstname} ${lastname}`.trim() || localPart;
   const birthdateRaw = profile.birthdate.trim();
@@ -128,10 +135,16 @@ export async function signUpWithEmail(
     throw new Error("La date de naissance est obligatoire.");
   }
 
-  const birthdateDate = new Date(`${birthdateRaw}T00:00:00.000Z`);
-  if (Number.isNaN(birthdateDate.getTime())) {
+  const birthdateLocal = parseIsoDateLocal(birthdateRaw);
+  if (!birthdateLocal) {
     throw new Error("La date de naissance est invalide.");
   }
+
+  if (!isOfLegalWorkAge(birthdateLocal)) {
+    throw new Error(UNDERAGE_MESSAGE);
+  }
+
+  const birthdateDate = new Date(`${birthdateRaw}T00:00:00.000Z`);
 
   try {
     const data = await apiFetch<unknown>("/api/auth/sign-up/email", {
@@ -144,6 +157,7 @@ export async function signUpWithEmail(
         lastname,
         role,
         birthdate: birthdateDate.toISOString(),
+        organization: role === "recruiter" ? organization : undefined,
         cguAcceptedAt: new Date().toISOString(),
       }),
     });
