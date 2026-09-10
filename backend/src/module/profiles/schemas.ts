@@ -30,7 +30,10 @@ export const profileListSchema = z.object({
 
 export const profileIdParamSchema = z.object({ id: z.uuid() });
 
-export const profileErrorSchema = z.object({ error: z.string() });
+export const profileErrorSchema = z.object({
+  error: z.string(),
+  code: z.string().optional(),
+});
 
 export const myProfileSchema = z.object({
   id: z.uuid(),
@@ -46,6 +49,7 @@ export const myProfileSchema = z.object({
   availability: z.string().nullable(),
   skills: z.array(z.string()),
   certified: z.boolean(),
+  profileHidden: z.boolean(),
   favorites: z.number(),
   cguAcceptedAt: z.string().nullable(),
   cguVersion: z.string().nullable(),
@@ -65,4 +69,14 @@ export const updateMyProfileSchema = z.object({
   location: optionalText,
   availability: optionalText,
   skills: z.array(z.string().trim().min(1).max(255)).max(30).optional(),
+  profileHidden: z.boolean().optional(),
+});
+
+export const profileViewSchema = z.object({
+  organization: z.string(),
+  viewedAt: z.string(),
+});
+
+export const profileViewsResponseSchema = z.object({
+  views: z.array(profileViewSchema),
 });

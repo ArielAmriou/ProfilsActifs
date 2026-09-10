@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api";
+import { apiFetch, ApiError } from "@/lib/api";
 import { NO_VIDEO, type VideoDescriptor } from "@/lib/videos";
 
 export interface Profile {
@@ -70,8 +70,38 @@ export async function fetchProfiles(): Promise<Profile[]> {
 export async function fetchProfile(id: string): Promise<Profile | null> {
   try {
     return toProfile(await apiFetch<ApiProfile>(`/api/profiles/${id}`));
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
     return null;
+  }
+}
+
+/** Distingue un profil caché d'un profil vraiment introuvable. */
+export async function fetchProfileAccess(
+  id: string,
+): Promise<"ok" | "hidden" | "missing"> {
+  try {
+    await apiFetch<ApiProfile>(`/api/profiles/${id}`);
+    return "ok";
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      const body = error.body;
+      if (
+        body &&
+        typeof body === "object" &&
+        (body as { code?: string }).code === "PROFILE_HIDDEN"
+      ) {
+        return "hidden";
+      }
+      const message = error.message.toLowerCase();
+      if (message.includes("indisponible")) {
+        return "hidden";
+      }
+      return "missing";
+    }
+    return "missing";
   }
 }
 
@@ -89,6 +119,7 @@ export interface MyProfile {
   availability: string | null;
   skills: string[];
   certified: boolean;
+  profileHidden: boolean;
   favorites: number;
   cguAcceptedAt: string | null;
   cguVersion: string | null;
@@ -104,6 +135,7 @@ export interface MyProfilePatch {
   location?: string | null;
   availability?: string | null;
   skills?: string[];
+  profileHidden?: boolean;
 }
 
 export async function fetchMyProfile(): Promise<MyProfile | null> {
@@ -119,6 +151,20 @@ export function updateMyProfile(patch: MyProfilePatch): Promise<MyProfile> {
     method: "PATCH",
     body: JSON.stringify(patch),
   });
+}
+
+export interface ProfileView {
+  organization: string;
+  viewedAt: string;
+}
+
+export async function fetchProfileViews(): Promise<ProfileView[]> {
+  try {
+    const data = await apiFetch<{ views: ProfileView[] }>("/api/me/profile-views");
+    return data.views;
+  } catch {
+    return [];
+  }
 }
 
 export function setCguConsent(accepted: boolean): Promise<MyProfile> {

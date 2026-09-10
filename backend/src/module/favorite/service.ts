@@ -10,6 +10,7 @@ export interface FavoriteUser {
   name: string;
   image: string | null;
   role: UserRole;
+  available: boolean;
 }
 
 const FAVORITE_USER_SELECT = {
@@ -19,14 +20,44 @@ const FAVORITE_USER_SELECT = {
   name: true,
   image: true,
   role: true,
+  profileHidden: true,
+  cguAcceptedAt: true,
+  videos: { select: { status: true } },
 } as const;
+
+function toFavoriteUser(jobseeker: {
+  id: string;
+  firstname: string;
+  lastname: string;
+  name: string;
+  image: string | null;
+  role: UserRole;
+  profileHidden: boolean;
+  cguAcceptedAt: Date | null;
+  videos: { status: string } | null;
+}): FavoriteUser {
+  const available =
+    !jobseeker.profileHidden &&
+    jobseeker.cguAcceptedAt !== null &&
+    jobseeker.videos?.status === "READY";
+
+  return {
+    id: jobseeker.id,
+    firstname: jobseeker.firstname,
+    lastname: jobseeker.lastname,
+    name: jobseeker.name,
+    image: jobseeker.image,
+    role: jobseeker.role,
+    available,
+  };
+}
 
 export async function setFavorite(
   recruiterId: string,
   profileId: string,
 ): Promise<FavoriteUser> {
   const jobseeker = await prisma.users.findFirst({
-    where: { id: profileId, role: "jobseeker" },
+    where: { id: profileId, role: "jobseeker", profileHidden: false },
     select: FAVORITE_USER_SELECT,
   });
 
@@ -57,7 +88,7 @@ export async function setFavorite(
     });
   }
 
-  return jobseeker;
+  return toFavoriteUser(jobseeker);
 }
 
 export async function getFavorites(recruiterId: string): Promise<FavoriteUser[]> {
@@ -67,7 +98,7 @@ export async function getFavorites(recruiterId: string): Promise<FavoriteUser[]>
     orderBy: { createdAt: "desc" },
   });
 
-  return favorites.map((favorite) => favorite.favoritedUser);
+  return favorites.map((favorite) => toFavoriteUser(favorite.favoritedUser));
 }
 
 export async function deleteFavorite(
