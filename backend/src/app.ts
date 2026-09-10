@@ -44,8 +44,8 @@ async function createApp() {
     openapi: {
       openapi: "3.0.0",
       info: {
-        title: "ProfilsActifs API",
-        description: "ProfilsActifs backend API.",
+        title: "Compétences+ API",
+        description: "Compétences+ backend API.",
         version: "0.1.0",
       },
       tags: [

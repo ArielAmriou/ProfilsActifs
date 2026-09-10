@@ -9,7 +9,7 @@ import { isStreamingProvider, type VideoProvider, type VideoUpload } from "../sr
 const SAMPLE: VideoUpload = {
   filename: "presentation.mp4",
   mimeType: "video/mp4",
-  data: Buffer.from("ProfilsActifs sample video payload"),
+  data: Buffer.from("Competences+ sample video payload"),
 };
 
 interface ProviderContract {
