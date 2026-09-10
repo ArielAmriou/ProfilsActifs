@@ -6,6 +6,7 @@ import type { Profile } from "@/lib/profiles-api";
 import { useAuth } from "@/context/AuthContext";
 import { useProfileInteractions } from "@/hooks/useProfileInteractions";
 import { isPlayable } from "@/lib/videos";
+import { notifyVideoPlaying, clearVideoPlaying } from "@/lib/video-playback";
 import { VideoUnavailable } from "@/components/video/VideoUnavailable";
 import type { LoginPromptAction } from "@/components/LoginPromptModal";
 import { CertifiedBadge } from "@/components/Certif";
@@ -88,8 +89,15 @@ export function ProfileCard({ profile, onRequireLogin }: ProfileCardProps) {
             preload="metadata"
             className="absolute inset-0 size-full object-cover"
             aria-label={`Vidéo de présentation de ${profile.name}`}
-            onPause={() => setPlaying(false)}
-            onEnded={() => setPlaying(false)}
+            onPlay={(e) => notifyVideoPlaying(e.currentTarget)}
+            onPause={(e) => {
+              setPlaying(false);
+              clearVideoPlaying(e.currentTarget);
+            }}
+            onEnded={(e) => {
+              setPlaying(false);
+              clearVideoPlaying(e.currentTarget);
+            }}
           >
             {profile.subtitlesUrl && (
               <track
