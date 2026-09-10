@@ -1,0 +1,35 @@
+# Recherche de l'ancien nom — sortie brute
+
+Date : 2026-09-10T14:18:38+02:00
+Commande : grep -rniI 'profilsactifs|profils actifs|profils-actifs' . (hors .git, node_modules, .next, var)
+
+## Dépôt
+```
+perf/RAPPORT.md:54:profilsactifs-back-bun-1   CPU 201,71 %
+perf/results/03-saturation-before.txt:10:        script: /tmp/claude-1000/-home-l-andre-EPITECH-troisieme-ann-e-Survivor-ProfilsActifs/11bce654-2b17-40b7-a611-e5c8c9e91a24/scratchpad/cat-only.js
+perf/results/04-saturation-after.txt:10:        script: /tmp/claude-1000/-home-l-andre-EPITECH-troisieme-ann-e-Survivor-ProfilsActifs/11bce654-2b17-40b7-a611-e5c8c9e91a24/scratchpad/cat-only.js
+```
+
+## Base de données
+
+Commande : requête SQL sur toutes les colonnes textuelles porteuses de contenu.
+```
+        emplacement         | count 
+----------------------------+-------
+ users.email                |     0
+ users.name                 |     0
+ users.firstname            |     0
+ users.lastname             |     0
+ users.title                |     0
+ users.sector               |     0
+ users.location             |     0
+ users.availability         |     0
+ users.skills               |     0
+ videos.provider_id         |     0
+ videos.provider_name       |     0
+ notifications.payload      |     0
+ surveys.questionnaire_file |     0
+ answers.value              |     0
+(14 rows)
+
+```

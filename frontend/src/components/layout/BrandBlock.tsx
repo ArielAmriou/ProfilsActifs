@@ -28,7 +28,7 @@ function BrandMark() {
       >
         <RobotIcon className="size-6" />
       </span>
-      <p className="font-title text-xl font-bold text-institutional">Compétences+</p>
+      <p className="font-title text-lg font-bold leading-none text-institutional">Compétences+</p>
     </div>
   );
 }
