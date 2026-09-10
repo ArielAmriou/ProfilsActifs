@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { CGU_VERSION } from "../../config/cgu";
+import { isOfLegalWorkAge, UNDERAGE_MESSAGE } from "../../lib/age";
 import { describeVideo, type VideoDescriptor } from "../video/service";
 
 const NO_VIDEO: VideoDescriptor = {
@@ -54,7 +55,12 @@ export interface PublicProfile {
 
 function findJobseekers() {
   return prisma.users.findMany({
-    where: { role: "jobseeker", cguAcceptedAt: { not: null } },
+    where: {
+      role: "jobseeker",
+      cguAcceptedAt: { not: null },
+      // Catalogue public : uniquement les profils dont la vidéo a été validée.
+      videos: { is: { status: "READY" } },
+    },
     select: SELECTION,
     orderBy: [
       { updatedAt: "desc" },
@@ -110,7 +116,12 @@ export async function listJobseekerProfiles(): Promise<PublicProfile[]> {
 
 export async function getJobseekerProfile(id: string): Promise<PublicProfile | null> {
   const row = await prisma.users.findFirst({
-    where: { id, role: "jobseeker", cguAcceptedAt: { not: null } },
+    where: {
+      id,
+      role: "jobseeker",
+      cguAcceptedAt: { not: null },
+      videos: { is: { status: "READY" } },
+    },
     select: SELECTION,
   });
 
@@ -210,6 +221,13 @@ export async function updateOwnProfile(
   patch: OwnProfilePatch,
 ): Promise<OwnProfile> {
   const { birthdate, ...rest } = patch;
+
+  if (birthdate) {
+    const parsed = new Date(`${birthdate}T12:00:00`);
+    if (Number.isNaN(parsed.getTime()) || !isOfLegalWorkAge(parsed)) {
+      throw new Error(UNDERAGE_MESSAGE);
+    }
+  }
 
   const row = await prisma.users.update({
     where: { id },

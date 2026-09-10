@@ -30,24 +30,44 @@ function degraded(record: VideoRecord, status: VideoStatus): VideoDescriptor {
   return { status, providerName: record.providerName, playbackUrl: null, size: record.size };
 }
 
-export async function describeVideo(record: VideoRecord): Promise<VideoDescriptor> {
+export async function describeVideo(
+  record: VideoRecord,
+  options: { previewWhilePending?: boolean } = {},
+): Promise<VideoDescriptor> {
   const provider = findVideoProvider(record.providerName);
 
   if (!provider) {
-    return degraded(record, "PROCESSING");
+    return degraded(record, record.status === "ERROR" ? "ERROR" : "PROCESSING");
   }
 
   try {
-    const status = await provider.status(record.providerId);
+    const providerStatus = await provider.status(record.providerId);
 
-    if (status !== "READY") {
-      return degraded(record, status);
+    if (providerStatus !== "READY") {
+      return degraded(record, providerStatus);
+    }
+
+    const playbackUrl = await provider.playbackUrl(record.providerId);
+
+    // Modération a priori : tant que l'admin n'a pas validé, le statut public reste
+    // PROCESSING. L'URL n'est exposée qu'en aperçu (candidat / admin).
+    if (record.status === "PROCESSING") {
+      return {
+        status: "PROCESSING",
+        providerName: record.providerName,
+        playbackUrl: options.previewWhilePending ? playbackUrl : null,
+        size: record.size,
+      };
+    }
+
+    if (record.status === "ERROR") {
+      return degraded(record, "ERROR");
     }
 
     return {
-      status,
+      status: "READY",
       providerName: record.providerName,
-      playbackUrl: await provider.playbackUrl(record.providerId),
+      playbackUrl,
       size: record.size,
     };
   } catch {
@@ -56,6 +76,12 @@ export async function describeVideo(record: VideoRecord): Promise<VideoDescripto
 }
 
 export async function getUserVideo(userId: string): Promise<VideoDescriptor | null> {
+  const record = await prisma.videos.findUnique({ where: { userId } });
+  return record ? describeVideo(record, { previewWhilePending: true }) : null;
+}
+
+/** Descripteur public : pas d'URL de lecture tant que la vidéo n'est pas READY. */
+export async function getPublicVideo(userId: string): Promise<VideoDescriptor | null> {
   const record = await prisma.videos.findUnique({ where: { userId } });
   return record ? describeVideo(record) : null;
 }
@@ -71,15 +97,15 @@ export async function replaceUserVideo(
 
   const record = await prisma.videos.upsert({
     where: { userId },
-    create: { userId, providerName: provider.name, providerId, status: "READY", size },
-    update: { providerName: provider.name, providerId, status: "READY", size },
+    create: { userId, providerName: provider.name, providerId, status: "PROCESSING", size },
+    update: { providerName: provider.name, providerId, status: "PROCESSING", size },
   });
 
   if (previous) {
     await discardPayload(previous.providerName, previous.providerId);
   }
 
-  return describeVideo(record);
+  return describeVideo(record, { previewWhilePending: true });
 }
 
 export async function purgeUserVideo(userId: string): Promise<boolean> {

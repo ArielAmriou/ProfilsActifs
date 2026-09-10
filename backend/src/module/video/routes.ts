@@ -11,6 +11,7 @@ import {
 import { parseByteRange } from "./range";
 import {
   describePlayback,
+  getPublicVideo,
   getUserVideo,
   openPlayback,
   purgeUserVideo,
@@ -92,7 +93,7 @@ export async function videoRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      return reply.send((await getUserVideo(request.params.userId)) ?? NO_VIDEO);
+      return reply.send((await getPublicVideo(request.params.userId)) ?? NO_VIDEO);
     },
   );
 
