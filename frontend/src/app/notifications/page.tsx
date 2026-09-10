@@ -18,10 +18,12 @@ import {
 function UnreadDot() {
   return (
     <span
-      className="mt-0.5 inline-flex size-2.5 shrink-0 rounded-full bg-action"
+      className="mt-0.5 flex size-5 shrink-0 items-center justify-center"
       title="Non lue"
       aria-label="Non lue"
-    />
+    >
+      <span className="size-2.5 rounded-full bg-action" />
+    </span>
   );
 }
 
