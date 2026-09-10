@@ -15,13 +15,105 @@ export interface Question {
   weight: number;
 }
 
+interface QuestionnaireProgress {
+  currentQuestionIndex: number;
+  answers: Record<string, string>;
+  retaking: boolean;
+}
+
+const EMPTY_PROGRESS: QuestionnaireProgress = {
+  currentQuestionIndex: 0,
+  answers: {},
+  retaking: false,
+};
+
+function progressStorageKey(userId: string) {
+  return `profilsactifs-questionnaire-progress:${userId}`;
+}
+
+/** Reprise de session : on retrouve la question en cours si l'utilisateur quitte avant la fin. */
+function readProgress(userId: string | null): QuestionnaireProgress {
+  if (typeof window === "undefined" || !userId) {
+    return EMPTY_PROGRESS;
+  }
+  try {
+    const stored = localStorage.getItem(progressStorageKey(userId));
+    if (!stored) {
+      return EMPTY_PROGRESS;
+    }
+    return { ...EMPTY_PROGRESS, ...JSON.parse(stored) } as QuestionnaireProgress;
+  } catch {
+    return EMPTY_PROGRESS;
+  }
+}
+
+function writeProgress(userId: string, progress: QuestionnaireProgress) {
+  try {
+    localStorage.setItem(progressStorageKey(userId), JSON.stringify(progress));
+  } catch {
+    // Stockage indisponible (navigation privée, quota atteint) — on ignore silencieusement.
+  }
+}
+
+function clearProgress(userId: string) {
+  try {
+    localStorage.removeItem(progressStorageKey(userId));
+  } catch {
+    // ignore
+  }
+}
+
+function QuestionnaireCompleted({ onRetake }: { onRetake: () => void }) {
+  const router = useRouter();
+
+  return (
+    <ContentCard className="w-full max-w-2xl text-center shadow-sm">
+      <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-action/10 text-action">
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-7" fill="currentColor">
+          <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+        </svg>
+      </span>
+
+      <h2 className="font-title mt-4 text-xl font-bold text-institutional">
+        Questionnaire déjà complété
+      </h2>
+      <p className="mt-2 text-sm text-institutional/80">
+        Vous avez déjà répondu à ce questionnaire et votre profil est certifié. Vous pouvez le
+        refaire à tout moment si votre situation a changé.
+      </p>
+
+      <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <button
+          type="button"
+          onClick={onRetake}
+          className="font-title rounded-full bg-action px-6 py-2.5 text-sm font-bold text-white transition hover:bg-action-hover"
+        >
+          Refaire le questionnaire
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push("/profil")}
+          className="font-title rounded-full border-2 border-border bg-surface px-6 py-2.5 text-sm font-bold text-institutional transition hover:border-institutional"
+        >
+          Retour à mon profil
+        </button>
+      </div>
+    </ContentCard>
+  );
+}
+
 export function Questionnaire() {
   const router = useRouter();
-  const { updateJobseekerProfile } = useAuth();
+  const { jobseekerProfile, updateJobseekerProfile, userId } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(
+    () => readProgress(userId).currentQuestionIndex,
+  );
+  const [answers, setAnswers] = useState<Record<string, string>>(
+    () => readProgress(userId).answers,
+  );
+  const [retaking, setRetaking] = useState(() => readProgress(userId).retaking);
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -39,9 +131,37 @@ export function Questionnaire() {
     fetchQuestions();
   }, []);
 
+  // Sauvegarde la progression (et le fait qu'on est en train de refaire le
+  // questionnaire) à chaque changement, pour permettre une reprise si
+  // l'utilisateur quitte la session avant d'avoir terminé.
+  useEffect(() => {
+    if (!userId) return;
+    writeProgress(userId, { currentQuestionIndex, answers, retaking });
+  }, [userId, currentQuestionIndex, answers, retaking]);
+
+  // Garde-fou si la progression sauvegardée pointe au-delà du questionnaire actuel
+  // (ex. version du questionnaire modifiée entre-temps).
+  useEffect(() => {
+    if (!loading && questions.length > 0 && currentQuestionIndex > questions.length - 1) {
+      setCurrentQuestionIndex(questions.length - 1);
+    }
+  }, [loading, questions, currentQuestionIndex]);
+
+  if (jobseekerProfile.certified && !retaking) {
+    return (
+      <QuestionnaireCompleted
+        onRetake={() => {
+          setAnswers({});
+          setCurrentQuestionIndex(0);
+          setRetaking(true);
+        }}
+      />
+    );
+  }
+
   if (loading) {
     return <LoadingSurvey />;
-  } 
+  }
   if (!questions || questions.length === 0) {
     return <SurveyError />;
   }
@@ -61,6 +181,7 @@ export function Questionnaire() {
     } else {
       const availability = answers["4"] ?? "";
       void updateJobseekerProfile({ certified: true, availability });
+      if (userId) clearProgress(userId);
       router.push("/profil");
     }
   };
