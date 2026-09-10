@@ -83,12 +83,45 @@ Certaines suites parlent à une vraie base. Voir le piège `DATABASE_URL` ci-des
 
 ## Tests de charge
 
+Installer k6 une fois (binaire autonome, sans droits root) :
+
 ```bash
-k6 run perf/catalogue-browse.js      # 100 VUs, 3 routes, 2 minutes
-k6 run perf/catalogue-only.js        # catalogue seul, point de saturation
+mkdir -p ~/.local/bin
+K6V=$(curl -s https://api.github.com/repos/grafana/k6/releases/latest | grep -oP '"tag_name": "\K[^"]+')
+curl -sL "https://github.com/grafana/k6/releases/download/${K6V}/k6-${K6V}-linux-amd64.tar.gz" \
+  | tar xz --strip-components=1 -C ~/.local/bin --wildcards '*/k6'
+```
+
+Puis, la pile démarrée et la base peuplée :
+
+```bash
+./perf/run-all.sh
+```
+
+Le script vérifie k6, l'API et le jeu de données avant de commencer, enchaîne les paliers de
+charge, échantillonne le CPU des conteneurs, et écrit une synthèse dans
+`perf/results/<horodatage>/SYNTHESE.md`.
+
+Tout est paramétrable :
+
+```bash
+LEVELS="50 100 200 400" DURATION=2m ./perf/run-all.sh
+BASE_URL=http://autre-hote:8081 ./perf/run-all.sh
+```
+
+Pour une exécution isolée :
+
+```bash
+k6 run -e VUS=200 -e DURATION=2m perf/catalogue-browse.js   # les 3 routes
+k6 run -e VUS=200 perf/catalogue-only.js                    # catalogue seul
 ```
 
 Résultats et analyse dans [../perf/RAPPORT.md](../perf/RAPPORT.md).
+
+> Ces mesures sont prises sur un poste de développement, où k6, le backend et PostgreSQL se
+> partagent les mêmes cœurs. Au-delà de quelques centaines de VUs, une part de la latence vient de
+> k6 lui-même : les chiffres valent comme comparatif avant/après sur une même machine, pas comme
+> capacité de production.
 
 ## Éprouver le mode dégradé vidéo
 
