@@ -6,7 +6,7 @@ export interface InteractionState {
 
 export type InteractionsMap = Record<string, InteractionState>;
 
-const INTERACTIONS_PREFIX = "profilsactifs-interactions";
+const INTERACTIONS_PREFIX = "competences-plus-interactions";
 
 export function getInteractionsStorageKey(email: string | null): string | null {
   if (!email) {

@@ -62,8 +62,8 @@ en gardant les données. **`docker compose down -v` efface la base** : comptes, 
 cd backend && bun run seed:videos    # 300 vidéos via VideoProvider
 ```
 
-Identifiants générés : `jobseeker-001@seed.profilsactifs.test` ou
-`recruiter-001@seed.profilsactifs.test`, mot de passe `SeedPassword123!`.
+Identifiants générés : `jobseeker-001@seed.competences-plus.test` ou
+`recruiter-001@seed.competences-plus.test`, mot de passe `SeedPassword123!`.
 
 `seed.sh` exige `curl` et **`ffmpeg` avec libx264 et aac**. Un build minimal — celui que Playwright
 installe, par exemple — fait échouer les transcodages en silence puis planter le script sur une

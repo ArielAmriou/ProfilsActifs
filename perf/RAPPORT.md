@@ -1,4 +1,4 @@
-# Rapport de test de charge — ProfilsActifs
+# Rapport de test de charge — Compétences+
 
 **Date d'exécution** : 10 septembre 2026
 **Outil** : k6 v2.2.0 (linux/amd64)

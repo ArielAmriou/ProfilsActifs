@@ -28,7 +28,7 @@ const EMPTY_PROGRESS: QuestionnaireProgress = {
 };
 
 function progressStorageKey(userId: string) {
-  return `profilsactifs-questionnaire-progress:${userId}`;
+  return `competences-plus-questionnaire-progress:${userId}`;
 }
 
 /** Reprise de session : on retrouve la question en cours si l'utilisateur quitte avant la fin. */

@@ -1,6 +1,6 @@
 /*
 ** EPITECH PROJECT, 2026
-** ProfilsActifs
+** Compétences+
 ** File description:
 ** certification.service
 */

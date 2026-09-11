@@ -1,4 +1,4 @@
-name: Build & Package ProfilsActifs
+name: Build & Package Compétences+
 
 on:
   push:
@@ -22,17 +22,17 @@ jobs:
 
       - name: setup archive
         run: |
-          mkdir profilsactifs-release
-          cp -r backend frontend docker-compose.yml readme.md profilsactifs-release/
+          mkdir competences-plus-release
+          cp -r backend frontend docker-compose.yml readme.md competences-plus-release/
           
-          cp .env.example profilsactifs-release/.env
+          cp .env.example competences-plus-release/.env
           
-          cp backend/.env.example profilsactifs-release/backend/.env
+          cp backend/.env.example competences-plus-release/backend/.env
 
       - name: Upload artefact
         uses: actions/upload-artifact@v4
         with:
-          name: ProfilsActifs-Build
-          path: profilsactifs-release/
+          name: Competences-Plus-Build
+          path: competences-plus-release/
           include-hidden-files: true
           retention-days: 7

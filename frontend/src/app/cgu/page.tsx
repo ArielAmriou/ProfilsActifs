@@ -5,7 +5,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { CGU_VERSION_LABEL, CGU_ARTICLES } from "@/data/cgu";
 
 export const metadata = {
-  title: "Conditions Générales d'Utilisation — ProfilsActifs",
+  title: "Conditions Générales d'Utilisation — Compétences+",
 };
 
 export default function CguPage() {
@@ -17,7 +17,7 @@ export default function CguPage() {
             Conditions Générales d&apos;Utilisation
           </h1>
           <p className="mt-1 text-sm text-institutional/70">
-            Plateforme ProfilsActifs · Dernière mise à jour : {CGU_VERSION_LABEL}
+            Plateforme Compétences+ · Dernière mise à jour : {CGU_VERSION_LABEL}
           </p>
 
           {CGU_ARTICLES.map((article) => (

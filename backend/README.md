@@ -1,4 +1,4 @@
-# Backend — ProfilsActifs
+# Backend — Compétences+
 
 API Fastify servie par Bun, adossée à PostgreSQL via Prisma.
 

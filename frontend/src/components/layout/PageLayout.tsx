@@ -17,7 +17,7 @@ export function PageLayout({
     <div className="flex min-h-[100dvh] flex-col lg:flex-row">
       <aside
         className={`flex shrink-0 flex-col border-b border-border bg-surface px-6 py-8 lg:w-64 lg:border-b-0 lg:border-r ${hideSidebarOnMobile ? "hidden lg:flex" : ""} ${sidebarClassName}`}
-        aria-label="Navigation ProfilsActifs"
+        aria-label="Navigation Compétences+"
       >
         {sidebar}
       </aside>

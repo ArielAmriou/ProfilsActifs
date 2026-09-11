@@ -31,10 +31,10 @@ export interface JobseekerProfile {
   profileHidden?: boolean;
 }
 
-export const AUTH_KEY = "profilsactifs-auth";
-export const ROLE_KEY = "profilsactifs-role";
-export const EMAIL_KEY = "profilsactifs-email";
-export const JOBSEEKER_PROFILE_KEY = "profilsactifs-jobseeker-profile";
+export const AUTH_KEY = "competences-plus-auth";
+export const ROLE_KEY = "competences-plus-role";
+export const EMAIL_KEY = "competences-plus-email";
+export const JOBSEEKER_PROFILE_KEY = "competences-plus-jobseeker-profile";
 
 export const DEFAULT_JOBSEEKER_PROFILE: JobseekerProfile = {
   firstname: "",
