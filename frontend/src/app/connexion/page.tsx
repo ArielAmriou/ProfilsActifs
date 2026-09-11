@@ -174,7 +174,7 @@ function AuthForm() {
       <div className="flex flex-1 items-center justify-center px-6 py-12">
         <ContentCard className="w-full max-w-lg">
           <h1 className="font-title text-2xl font-bold text-institutional">
-            {mode === "login" ? "Connexion à ProfilsActifs" : "Créer un compte"}
+            {mode === "login" ? "Connexion à Compétences+" : "Créer un compte"}
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-institutional/80">
             {mode === "login"

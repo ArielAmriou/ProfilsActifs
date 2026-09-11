@@ -28,7 +28,7 @@ function BrandMark() {
       >
         <RobotIcon className="size-6" />
       </span>
-      <p className="font-title text-xl font-bold text-institutional">ProfilsActifs</p>
+      <p className="font-title text-lg font-bold leading-none text-institutional">Compétences+</p>
     </div>
   );
 }
@@ -36,7 +36,7 @@ function BrandMark() {
 export function BrandBlock({ className = "", link = true }: BrandBlockProps) {
   if (!link) {
     return (
-      <div className={className} aria-label="ProfilsActifs">
+      <div className={className} aria-label="Compétences+">
         <BrandMark />
       </div>
     );
@@ -46,7 +46,7 @@ export function BrandBlock({ className = "", link = true }: BrandBlockProps) {
     <Link
       href="/"
       className={`block no-underline ${className}`}
-      aria-label="ProfilsActifs — Accueil"
+      aria-label="Compétences+ — Accueil"
     >
       <BrandMark />
     </Link>

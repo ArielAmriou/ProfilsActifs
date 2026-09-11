@@ -1,6 +1,6 @@
 # Architecture
 
-Vue d'ensemble technique de ProfilsActifs : comment les briques s'assemblent, ce qui traverse
+Vue d'ensemble technique de Compétences+ : comment les briques s'assemblent, ce qui traverse
 une requête, et les décisions structurantes qui expliquent la forme du code.
 
 ## 1. Les trois services

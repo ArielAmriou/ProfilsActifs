@@ -20,6 +20,7 @@ model Users {
   location      String?    @db.VarChar(255)
   availability  String?    @db.VarChar(255)
   organization  String?    @db.VarChar(255)
+  profileHidden Boolean    @default(false) @map("profile_hidden")
   skills        String[]   @default([])
   certified     Boolean    @default(false)
   cguAcceptedAt DateTime?  @map("cgu_accepted_at") @db.Timestamptz(3)

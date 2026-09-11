@@ -11,7 +11,7 @@ export const CGU_ARTICLES: CguArticle[] = [
   {
     heading: "Préambule et mentions légales",
     paragraphs: [
-      "Les présentes Conditions Générales d'Utilisation encadrent l'accès et l'utilisation de la plateforme web de recrutement vidéo interactive ProfilsActifs. Le service est opéré sous la tutelle du Ministère du Job et du Bonheur.",
+      "Les présentes Conditions Générales d'Utilisation encadrent l'accès et l'utilisation de la plateforme web de recrutement vidéo interactive Compétences+. Le service est opéré sous la tutelle du Ministère du Job et du Bonheur.",
       "L'utilisation du Service implique l'acceptation pleine et entière des présentes CGU par l'ensemble des utilisateurs.",
     ],
   },
@@ -64,7 +64,7 @@ export const CGU_ARTICLES: CguArticle[] = [
     heading: "Article 6. Protection des données personnelles (RGPD)",
     paragraphs: [
       "Sont collectés : les nom, prénom, date de naissance, adresse e-mail et image de profil facultative des utilisateurs ; les données techniques de connexion (adresse IP, agent utilisateur, jetons de session) ; les contenus de la plateforme (vidéo de présentation, réponses au questionnaire, statistiques d'interaction).",
-      "Chaque utilisateur dispose d'un droit d'accès, de rectification, de suppression et de portabilité de ses données. Pour exercer ces droits, contactez le Délégué à la Protection des Données : dpo@profilsactifs.gouv.fr.",
+      "Chaque utilisateur dispose d'un droit d'accès, de rectification, de suppression et de portabilité de ses données. Pour exercer ces droits, contactez le Délégué à la Protection des Données : dpo@competences-plus.gouv.fr.",
     ],
   },
   {
@@ -76,7 +76,7 @@ export const CGU_ARTICLES: CguArticle[] = [
   {
     heading: "Article 8. Nature du service et droit applicable",
     paragraphs: [
-      "ProfilsActifs est un service public numérique édité et opéré par le Ministère du Job et du Bonheur. Les présentes CGU sont régies par le droit français. Tout litige relève, à défaut de résolution amiable, de la compétence exclusive des juridictions françaises.",
+      "Compétences+ est un service public numérique édité et opéré par le Ministère du Job et du Bonheur. Les présentes CGU sont régies par le droit français. Tout litige relève, à défaut de résolution amiable, de la compétence exclusive des juridictions françaises.",
     ],
   },
   {

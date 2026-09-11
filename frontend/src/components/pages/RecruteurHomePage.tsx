@@ -16,7 +16,7 @@ export function RecruteurHomePage() {
         mainClassName="relative min-h-[100dvh]"
       >
         <BlockRole blocked="jobseeker">
-          <h1 className="sr-only">Catalogue de profils — ProfilsActifs</h1>
+          <h1 className="sr-only">Catalogue de profils — Compétences+</h1>
           <HeaderBar />
           <ProfileCatalog />
         </BlockRole>

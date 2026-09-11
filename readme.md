@@ -1,6 +1,6 @@
-# ProfilsActifs
+# Compétences+
 
-ProfilsActifs is a job-matching platform built for the "Ministere du Job et Bonheur" digital strategy brief (reference JEB/DNI/2026-003), part of the Epitech third-year pool project (PGE3, module G-SVR-500).
+Compétences+ is a job-matching platform built for the "Ministere du Job et Bonheur" digital strategy brief (reference JEB/DNI/2026-003), part of the Epitech third-year pool project (PGE3, module G-SVR-500).
 
 Instead of a traditional resume, job seekers present themselves through a short video profile and can complete a professional aptitude certification questionnaire to earn a badge displayed on their profile. Recruiters browse, filter, and interact with candidate profiles from a dedicated space, while administrators moderate content and manage the certification questionnaire.
 

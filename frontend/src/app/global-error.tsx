@@ -16,7 +16,7 @@ export default function GlobalError({
     <html lang="fr">
       <body className="m-0 flex min-h-[100dvh] flex-col bg-[#faf8f4] font-sans text-[#1a4540]">
         <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-12">
-          <p className="text-xl font-bold">ProfilsActifs</p>
+          <p className="text-xl font-bold">Compétences+</p>
           <h1 className="mt-6 text-2xl font-bold">Erreur serveur</h1>
           <p className="mt-3 text-sm leading-relaxed opacity-80">
             Une erreur inattendue est survenue. Vous pouvez réessayer.

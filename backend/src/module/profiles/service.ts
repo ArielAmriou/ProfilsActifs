@@ -58,6 +58,7 @@ function findJobseekers() {
     where: {
       role: "jobseeker",
       cguAcceptedAt: { not: null },
+      profileHidden: false,
       // Catalogue public : uniquement les profils dont la vidéo a été validée.
       videos: { is: { status: "READY" } },
     },
@@ -114,18 +115,40 @@ export async function listJobseekerProfiles(): Promise<PublicProfile[]> {
   }
 }
 
-export async function getJobseekerProfile(id: string): Promise<PublicProfile | null> {
+export type ProfileAccess =
+  | { status: "ok"; profile: PublicProfile }
+  | { status: "hidden" }
+  | { status: "missing" };
+
+export async function getJobseekerProfileAccess(id: string): Promise<ProfileAccess> {
   const row = await prisma.users.findFirst({
     where: {
       id,
       role: "jobseeker",
       cguAcceptedAt: { not: null },
-      videos: { is: { status: "READY" } },
     },
-    select: SELECTION,
+    select: { ...SELECTION, profileHidden: true },
   });
 
-  return row ? toPublicProfile(row) : null;
+  if (!row) {
+    return { status: "missing" };
+  }
+
+  if (row.profileHidden) {
+    return { status: "hidden" };
+  }
+
+  if (!row.videos || row.videos.status !== "READY") {
+    return { status: "missing" };
+  }
+
+  const { profileHidden: _hidden, ...publicRow } = row;
+  return { status: "ok", profile: await toPublicProfile(publicRow) };
+}
+
+export async function getJobseekerProfile(id: string): Promise<PublicProfile | null> {
+  const access = await getJobseekerProfileAccess(id);
+  return access.status === "ok" ? access.profile : null;
 }
 
 export interface OwnProfile {
@@ -142,6 +165,7 @@ export interface OwnProfile {
   availability: string | null;
   skills: string[];
   certified: boolean;
+  profileHidden: boolean;
   favorites: number;
   cguAcceptedAt: string | null;
   cguVersion: string | null;
@@ -157,6 +181,7 @@ export interface OwnProfilePatch {
   location?: string | null;
   availability?: string | null;
   skills?: string[];
+  profileHidden?: boolean;
 }
 
 const OWN_SELECTION = {
@@ -173,6 +198,7 @@ const OWN_SELECTION = {
   availability: true,
   skills: true,
   certified: true,
+  profileHidden: true,
   cguAcceptedAt: true,
   cguVersion: true,
   _count: { select: { favoritesReceived: true } },
@@ -241,4 +267,38 @@ export async function updateOwnProfile(
 
   invalidateCatalogue();
   return toOwnProfile(row);
+}
+
+export interface ProfileViewRow {
+  organization: string;
+  viewedAt: string;
+}
+
+/** Recruteurs ayant consulté le profil : organisation + date/heure uniquement. */
+export async function listProfileViewsForUser(userId: string): Promise<ProfileViewRow[]> {
+  const rows = await prisma.notifications.findMany({
+    where: { recipientId: userId, type: "PROFILE_VIEWED" },
+    select: {
+      createdAt: true,
+      payload: true,
+      actor: { select: { organization: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return rows.map((row) => {
+    const payload =
+      row.payload && typeof row.payload === "object" && !Array.isArray(row.payload)
+        ? (row.payload as Record<string, unknown>)
+        : {};
+    const fromPayload =
+      typeof payload.organization === "string" ? payload.organization.trim() : "";
+    const fromActor = row.actor?.organization?.trim() ?? "";
+    const organization = fromPayload || fromActor || "Organisation non renseignée";
+
+    return {
+      organization,
+      viewedAt: row.createdAt.toISOString(),
+    };
+  });
 }

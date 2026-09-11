@@ -1,4 +1,4 @@
-# Frontend — ProfilsActifs
+# Frontend — Compétences+
 
 Application Next.js 16 (App Router) en React 19, stylée avec Tailwind CSS 4.
 

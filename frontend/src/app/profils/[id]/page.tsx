@@ -1,17 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { HeaderBar } from "@/components/HeaderBar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-import { RequireRole } from "@/components/RequireRole";
+import { BlockRole } from "@/components/RequireRole";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { CertifiedBadge } from "@/components/Certif";
-import { fetchProfile, type Profile } from "@/lib/profiles-api";
+import { fetchProfileResult, type Profile } from "@/lib/profiles-api";
 
 interface ProfileDetailPageProps {
   params: Promise<{ id: string }>;
@@ -20,15 +19,17 @@ interface ProfileDetailPageProps {
 export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
   const { id } = use(params);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [access, setAccess] = useState<"loading" | "ok" | "hidden" | "missing">("loading");
 
   useEffect(() => {
     let active = true;
 
-    fetchProfile(id).then((fetched) => {
+    fetchProfileResult(id).then((result) => {
       if (!active) return;
-      setProfile(fetched);
-      setLoading(false);
+      if (result.status === "ok") {
+        setProfile(result.profile);
+      }
+      setAccess(result.status);
     });
 
     return () => {
@@ -36,27 +37,53 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
     };
   }, [id]);
 
-  if (loading) {
+  if (access === "loading") {
     return (
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
-        <RequireRole allowed={["recruiter"]}>
+        <BlockRole blocked="jobseeker">
           <HeaderBar />
           <p role="status" className="px-6 py-20 text-center text-sm text-institutional/70">
             Chargement du profil…
           </p>
-        </RequireRole>
+        </BlockRole>
       </PageLayout>
     );
   }
 
-  if (!profile) {
-    notFound();
+  if (access === "hidden" || access === "missing" || !profile) {
+    return (
+      <>
+        <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
+          <BlockRole blocked="jobseeker">
+            <HeaderBar />
+            <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
+              <ContentCard className="w-full max-w-2xl">
+                <Link
+                  href="/favoris"
+                  className="font-title text-sm font-bold text-institutional no-underline hover:underline"
+                >
+                  ← Retour
+                </Link>
+                <h1 className="font-title mt-6 text-2xl font-bold text-institutional">
+                  Profil indisponible
+                </h1>
+                <p className="mt-3 text-sm text-institutional/80">
+                  Ce profil n&apos;est plus consultable. Le candidat l&apos;a peut-être masqué
+                  ou retiré du catalogue.
+                </p>
+              </ContentCard>
+            </div>
+          </BlockRole>
+        </PageLayout>
+        <MobileBottomNav />
+      </>
+    );
   }
 
   return (
     <>
       <PageLayout hideSidebarOnMobile sidebar={<AppSidebar />}>
-        <RequireRole allowed={["recruiter"]}>
+        <BlockRole blocked="jobseeker">
           <HeaderBar />
           <div className="flex flex-1 flex-col px-6 py-10 lg:px-10">
             <ContentCard className="w-full max-w-2xl">
@@ -109,7 +136,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
               </dl>
             </ContentCard>
           </div>
-        </RequireRole>
+        </BlockRole>
       </PageLayout>
       <MobileBottomNav />
     </>
