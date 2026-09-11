@@ -56,8 +56,10 @@ export default function VueProfilPage() {
                 Vues du profil
               </h1>
               <p className="mt-2 text-sm text-institutional/80">
-                Organisations ayant consulté votre fiche. Aucun nom de recruteur n&apos;est
-                affiché.
+                Organisations ayant consulté votre fiche lorsqu&apos;elles étaient connectées
+                avec un compte recruteur. Aucun nom de personne n&apos;est affiché. Les
+                consultations anonymes, hors compte, ne sont pas enregistrées : ce journal
+                n&apos;est donc pas un décompte exhaustif de toutes les vues possibles.
               </p>
 
               {loading ? (
