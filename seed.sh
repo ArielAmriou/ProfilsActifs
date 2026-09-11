@@ -37,6 +37,7 @@ if [[ -z "${DATABASE_URL:-}" ]]; then
   DATABASE_URL="$(grep -E '^[[:space:]]*DATABASE_URL=' "$BACKEND_DIR/.env" | tail -1 | cut -d= -f2-)"
   DATABASE_URL="${DATABASE_URL//\"/}"
   DATABASE_URL="${DATABASE_URL//@db:/@localhost:}"
+  DATABASE_URL="${DATABASE_URL//@postgres-pf:/@localhost:}"
 fi
 
 after_at="${DATABASE_URL#*@}"

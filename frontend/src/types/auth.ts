@@ -28,6 +28,7 @@ export interface JobseekerProfile {
   likes: number;
   favorites: number;
   certified?: boolean;
+  profileHidden?: boolean;
 }
 
 export const AUTH_KEY = "competences-plus-auth";
@@ -48,6 +49,7 @@ export const DEFAULT_JOBSEEKER_PROFILE: JobseekerProfile = {
   likes: 0,
   favorites: 0,
   certified: false,
+  profileHidden: false,
 };
 
 /** Convertit une date API (ISO) vers YYYY-MM-DD pour les inputs date. */

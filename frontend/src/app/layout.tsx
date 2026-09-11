@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body className="pb-10">
+      <body className="pb-10" suppressHydrationWarning>
         <a href="#contenu-principal" className="skip-link">
           Aller au contenu principal
         </a>

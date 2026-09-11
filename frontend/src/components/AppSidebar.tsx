@@ -18,6 +18,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Profils mis en avant", href: "/", roles: ["recruiter"] },
   { label: "Mes favoris", href: "/favoris", roles: ["recruiter"] },
   { label: "Profil", href: "/profil", roles: ["jobseeker"] },
+  { label: "Vues profil", href: "/vue-profil", roles: ["jobseeker"] },
   { label: "Notifications", href: "/notifications", roles: ["jobseeker"] },
   { label: "Ma vidéo", href: "/ma-video", roles: ["jobseeker"] },
   { label: "Questionnaire", href: "/questionnaire", roles: ["jobseeker"] },

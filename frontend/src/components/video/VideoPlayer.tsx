@@ -1,6 +1,7 @@
 "use client";
 
 import type { VideoDescriptor } from "@/lib/videos";
+import { notifyVideoPlaying } from "@/lib/video-playback";
 import { canPreviewPending, isPlayable } from "@/lib/videos";
 import { VideoUnavailable } from "./VideoUnavailable";
 
@@ -34,6 +35,7 @@ export function VideoPlayer({
       preload="metadata"
       className={className}
       aria-label={label}
+      onPlay={(e) => notifyVideoPlaying(e.currentTarget)}
     >
       {subtitlesUrl && (
         <track kind="subtitles" src={subtitlesUrl} srcLang="fr" label="Français" default />

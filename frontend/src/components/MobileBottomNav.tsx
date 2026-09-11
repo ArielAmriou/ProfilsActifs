@@ -16,6 +16,7 @@ const MOBILE_ITEMS: MobileNavItem[] = [
   { label: "Profils", href: "/", roles: ["recruiter"] },
   { label: "Favoris", href: "/favoris", roles: ["recruiter"] },
   { label: "Profil", href: "/profil", roles: ["jobseeker"] },
+  { label: "Vues", href: "/vue-profil", roles: ["jobseeker"] },
   { label: "Notifs", href: "/notifications", roles: ["jobseeker"] },
   { label: "Ma vidéo", href: "/ma-video", roles: ["jobseeker"] },
   { label: "Questionnaire", href: "/questionnaire", roles: ["jobseeker"] },

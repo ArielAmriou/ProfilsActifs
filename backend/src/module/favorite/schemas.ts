@@ -11,6 +11,7 @@ export const favoriteUserSchema = z.object({
   name: z.string(),
   image: z.string().nullable(),
   role: z.enum(["jobseeker", "recruiter", "admin"]),
+  available: z.boolean(),
 });
 
 export const favoriteListSchema = z.object({
